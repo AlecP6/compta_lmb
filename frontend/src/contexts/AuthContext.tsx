@@ -32,11 +32,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       authService
         .getCurrentUser(storedToken)
         .then((userData) => {
-          setUser(userData.user);
+          if (userData && userData.user) {
+            setUser(userData.user);
+          } else {
+            // Token invalide ou expiré
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+          }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+          // Token invalide ou expiré
           localStorage.removeItem('token');
           setToken(null);
+          setUser(null);
         })
         .finally(() => {
           setLoading(false);

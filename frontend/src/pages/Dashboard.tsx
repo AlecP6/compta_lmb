@@ -21,8 +21,8 @@ interface Transaction {
 }
 
 interface Stats {
-  totalIncome: number;
-  totalExpense: number;
+  income: number;
+  expenses: number;
   balance: number;
   totalTransactions: number;
 }
@@ -67,6 +67,15 @@ const Dashboard = () => {
     loadStats();
   }, [loadTransactions, loadStats]);
 
+  // Actualisation automatique des stats toutes les 5 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadStats();
+    }, 5000); // Actualise toutes les 5 secondes
+
+    return () => clearInterval(interval);
+  }, [loadStats]);
+
   const handleTransactionCreated = useCallback(() => {
     loadTransactions();
     loadStats();
@@ -86,8 +95,8 @@ const Dashboard = () => {
   }, []);
 
   const formattedBalance = useMemo(() => formatCurrency(balance), [balance, formatCurrency]);
-  const formattedIncome = useMemo(() => stats ? formatCurrency(stats.totalIncome) : '', [stats?.totalIncome, formatCurrency]);
-  const formattedExpense = useMemo(() => stats ? formatCurrency(stats.totalExpense) : '', [stats?.totalExpense, formatCurrency]);
+  const formattedIncome = useMemo(() => stats ? formatCurrency(stats.income) : '', [stats?.income, formatCurrency]);
+  const formattedExpense = useMemo(() => stats ? formatCurrency(stats.expenses) : '', [stats?.expenses, formatCurrency]);
 
   return (
     <div className="dashboard">
