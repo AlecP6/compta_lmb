@@ -6,6 +6,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc && prisma generate",
     "postinstall": "prisma generate",
+    "vercel-build": "prisma generate",
     "start": "node dist/server.js",
     "vercel-build": "node scripts/clean-migrations.js && prisma generate",
     "prisma:generate": "prisma generate",
