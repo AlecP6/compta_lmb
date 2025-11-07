@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { transactionService } from '../services/transactionService';
 import TransactionList from '../components/TransactionList';
@@ -29,6 +30,7 @@ interface Stats {
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [balance, setBalance] = useState(0);
@@ -105,9 +107,16 @@ const Dashboard = () => {
           <h1>Compta LMB</h1>
           <p className="welcome-text">Bienvenue, {user?.name} !</p>
         </div>
-        <button onClick={logout} className="btn-logout">
-          Déconnexion
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {user?.isAdmin && (
+            <button onClick={() => navigate('/admin')} className="btn-admin">
+              Panel Admin
+            </button>
+          )}
+          <button onClick={logout} className="btn-logout">
+            Déconnexion
+          </button>
+        </div>
       </header>
 
       <div className="dashboard-content">

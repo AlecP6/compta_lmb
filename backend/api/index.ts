@@ -64,7 +64,8 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user.id, username: user.username, name: user.name },
+      // @ts-ignore - isAdmin sera disponible après prisma generate
+      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
     });
   } catch (error: any) {
     console.error('Erreur inscription:', error);
@@ -82,6 +83,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Trouver l'utilisateur
+    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({
       where: { username },
     });
@@ -103,7 +105,8 @@ app.post('/api/auth/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, name: user.name },
+      // @ts-ignore - isAdmin sera disponible après prisma generate
+      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
     });
   } catch (error: any) {
     console.error('Erreur connexion:', error);
@@ -134,9 +137,10 @@ const authenticate = (req: express.Request, res: express.Response, next: express
 app.get('/api/auth/me', authenticate, async (req, res) => {
   try {
     const userId = (req as any).userId;
+    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, username: true, name: true, createdAt: true },
+      select: { id: true, username: true, name: true, isAdmin: true, createdAt: true },
     });
 
     if (!user) {
@@ -154,9 +158,10 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 app.get('/api/me', authenticate, async (req, res) => {
   try {
     const userId = (req as any).userId;
+    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, username: true, name: true, createdAt: true },
+      select: { id: true, username: true, name: true, isAdmin: true, createdAt: true },
     });
 
     if (!user) {
@@ -169,6 +174,28 @@ app.get('/api/me', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
+// Middleware admin
+const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const userId = (req as any).userId;
+    // @ts-ignore - isAdmin sera disponible après prisma generate
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isAdmin: true },
+    });
+
+    // @ts-ignore - isAdmin sera disponible après prisma generate
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ error: 'Accès admin requis' });
+    }
+
+    next();
+  } catch (error: any) {
+    console.error('Erreur vérification admin:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
 
 // ===== TRANSACTIONS =====
 
@@ -306,6 +333,18 @@ app.delete('/api/transactions/:id', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Non autorisé' });
     }
 
+    // Logger la suppression avant de supprimer
+    // @ts-ignore - deletionLog sera disponible après prisma generate
+    await prisma.deletionLog.create({
+      data: {
+        transactionId: transaction.id,
+        deletedBy: userId,
+        transactionType: transaction.type,
+        amount: transaction.amount,
+        description: transaction.description,
+      },
+    });
+
     await prisma.transaction.delete({
       where: { id },
     });
@@ -345,6 +384,86 @@ app.get('/api/transactions/stats/summary', authenticate, async (req, res) => {
   }
 });
 
+// ===== ADMIN =====
+
+// Logs de suppressions (admin uniquement)
+app.get('/api/admin/deletion-logs', authenticate, requireAdmin, async (req, res) => {
+  try {
+    // @ts-ignore - deletionLog sera disponible après prisma generate
+    const logs = await prisma.deletionLog.findMany({
+      include: {
+        deletedByUser: {
+          select: { id: true, username: true, name: true },
+        },
+      },
+      orderBy: { deletedAt: 'desc' },
+      take: 100,
+    });
+
+    res.json({ logs });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Statistiques par semaine et par utilisateur (admin uniquement)
+app.get('/api/admin/weekly-stats', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const allTransactions = await prisma.transaction.findMany({
+      include: {
+        user: {
+          select: { id: true, username: true, name: true },
+        },
+      },
+      where: {
+        type: 'INCOME', // Seulement les entrées
+      },
+    });
+
+    // Grouper par semaine et par utilisateur
+    const weeklyStats: Record<string, Record<string, number>> = {};
+
+    allTransactions.forEach((transaction) => {
+      const date = new Date(transaction.createdAt);
+      // Obtenir le lundi de la semaine (début de semaine)
+      const monday = new Date(date);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour lundi
+      monday.setDate(diff);
+      monday.setHours(0, 0, 0, 0);
+      
+      const weekKey = monday.toISOString().split('T')[0]; // Format YYYY-MM-DD
+      const userId = transaction.userId;
+      const userName = transaction.user.name || transaction.user.username;
+
+      if (!weeklyStats[weekKey]) {
+        weeklyStats[weekKey] = {};
+      }
+
+      if (!weeklyStats[weekKey][userName]) {
+        weeklyStats[weekKey][userName] = 0;
+      }
+
+      weeklyStats[weekKey][userName] += transaction.amount;
+    });
+
+    // Convertir en format tableau pour faciliter l'affichage
+    const statsArray = Object.entries(weeklyStats).map(([week, users]) => ({
+      week,
+      users: Object.entries(users).map(([userName, total]) => ({
+        userName,
+        total,
+      })),
+    })).sort((a, b) => b.week.localeCompare(a.week)); // Plus récent en premier
+
+    res.json({ stats: statsArray });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Routes alternatives pour compatibilité (dupliquées)
 app.post('/api/register', async (req, res) => {
   try {
@@ -368,6 +487,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.create({
       data: { username, password: hashedPassword, name },
     });
@@ -377,7 +497,8 @@ app.post('/api/register', async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user.id, username: user.username, name: user.name },
+      // @ts-ignore - isAdmin sera disponible après prisma generate
+      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
     });
   } catch (error: any) {
     console.error('Erreur inscription:', error);
@@ -393,6 +514,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
     }
 
+    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) {
       return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
@@ -408,7 +530,8 @@ app.post('/api/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, name: user.name },
+      // @ts-ignore - isAdmin sera disponible après prisma generate
+      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
     });
   } catch (error: any) {
     console.error('Erreur connexion:', error);

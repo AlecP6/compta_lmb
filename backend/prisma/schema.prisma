@@ -16,10 +16,12 @@ model User {
   password  String
   name      String
   email     String?  // Optionnel pour compatibilité
+  isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   transactions Transaction[]
+  deletionLogs DeletionLog[]
 }
 
 model Transaction {
@@ -33,5 +35,16 @@ model Transaction {
   
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DeletionLog {
+  id            String   @id @default(cuid())
+  transactionId String
+  deletedBy     String
+  deletedByUser User     @relation(fields: [deletedBy], references: [id], onDelete: Cascade)
+  transactionType String
+  amount        Float
+  description   String
+  deletedAt     DateTime @default(now())
 }
 
