@@ -38,8 +38,11 @@ app.get('/api/health', (req, res) => {
 
 // Initialiser le compte admin et les migrations (une seule fois)
 let initialized = false;
+let initializing = false;
+
 const initialize = async () => {
-  if (initialized) return;
+  if (initialized || initializing) return;
+  initializing = true;
   
   try {
     // Synchroniser le schéma Prisma avec la base de données en production
@@ -47,28 +50,39 @@ const initialize = async () => {
       const { execSync } = await import('child_process');
       try {
         console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
+        console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Défini' : 'NON DÉFINI');
+        
         // Utiliser db push pour créer les tables directement (plus simple que migrate)
-        execSync('npx prisma db push --accept-data-loss', { 
+        execSync('npx prisma db push --accept-data-loss --skip-generate', { 
           stdio: 'inherit',
           cwd: process.cwd(),
-          env: { ...process.env }
+          env: { ...process.env },
+          timeout: 60000 // 60 secondes de timeout
         });
         console.log('✅ Schéma synchronisé');
       } catch (error: any) {
-        console.warn('⚠️ Erreur lors de la synchronisation (peut être normal si déjà fait):', error.message);
+        console.error('❌ Erreur lors de la synchronisation:', error.message);
+        console.error('Stack:', error.stack);
+        // Ne pas continuer si la synchronisation échoue
+        initializing = false;
+        return;
       }
     }
     
+    // Attendre un peu pour que la base de données soit prête
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Initialiser le compte admin
+    console.log('🔧 Initialisation du compte admin...');
     await initAdmin();
     initialized = true;
+    initializing = false;
     console.log('✅ Initialisation terminée');
   } catch (error: any) {
     console.error('❌ Erreur lors de l\'initialisation:', error.message);
-    // Ne pas bloquer le démarrage si l'admin existe déjà
-    if (!error.message?.includes('Unique constraint')) {
-      console.error('Détails:', error);
-    }
+    console.error('Stack:', error.stack);
+    initializing = false;
+    // Ne pas bloquer le démarrage, mais loguer l'erreur
   }
 };
 
