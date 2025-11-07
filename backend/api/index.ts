@@ -17,9 +17,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API fonctionnelle' });
 });
 
+// Route catch-all pour debug
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Backend fonctionnel', path: req.path });
+});
+
 // ===== AUTHENTIFICATION =====
 
-// Inscription
+// Inscription - Support des deux formats
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password, name } = req.body;
@@ -67,7 +72,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Connexion
+// Connexion - Support des deux formats
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -234,6 +239,77 @@ app.delete('/api/transactions/:id', authenticate, async (req, res) => {
     res.json({ message: 'Transaction supprimée' });
   } catch (error: any) {
     console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Routes alternatives pour compatibilité (dupliquées)
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, name } = req.body;
+
+    if (!username || !password || !name) {
+      return res.status(400).json({ error: 'Tous les champs sont requis' });
+    }
+
+    if (username.length < 3) {
+      return res.status(400).json({ error: 'L\'identifiant doit contenir au moins 3 caractères' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { username } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Cet identifiant est déjà utilisé' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: { username, password: hashedPassword, name },
+    });
+
+    const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+
+    res.status(201).json({
+      token,
+      user: { id: user.id, username: user.username, name: user.name },
+    });
+  } catch (error: any) {
+    console.error('Erreur inscription:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+
+    res.json({
+      token,
+      user: { id: user.id, username: user.username, name: user.name },
+    });
+  } catch (error: any) {
+    console.error('Erreur connexion:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
