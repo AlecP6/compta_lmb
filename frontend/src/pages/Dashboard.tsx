@@ -104,8 +104,8 @@ const Dashboard = () => {
     <div className="dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Compta LMB</h1>
-          <p className="welcome-text">Bienvenue, {user?.name} !</p>
+          <h1>Comptabilité London Mandem Boys</h1>
+          <p className="welcome-text">{user?.name}</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           {user?.isAdmin && (
@@ -171,7 +171,7 @@ const Dashboard = () => {
                 className="btn-add"
                 onClick={() => setShowForm(!showForm)}
               >
-                {showForm ? 'Annuler' : '+ Ajouter'}
+                {showForm ? 'Annuler' : 'Ajouter'}
               </button>
             </div>
           </div>
