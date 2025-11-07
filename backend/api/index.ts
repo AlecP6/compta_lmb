@@ -2,12 +2,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createRequire } from 'module';
 import authRoutes from '../src/routes/auth.js';
 import transactionRoutes from '../src/routes/transactions.js';
 import { initAdmin } from '../src/scripts/initAdmin.js';
-
-const require = createRequire(import.meta.url);
 
 dotenv.config();
 
@@ -48,35 +45,8 @@ const initialize = async () => {
   initializing = true;
   
   try {
-    // Synchroniser le schéma Prisma avec la base de données en production
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      const { execSync } = await import('child_process');
-      try {
-        console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
-        console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Défini' : 'NON DÉFINI');
-        
-        // Utiliser prisma avec le chemin complet depuis node_modules
-        const prismaCliPath = require.resolve('prisma/build/index.js');
-        execSync(`node "${prismaCliPath}" db push --accept-data-loss --skip-generate`, { 
-          stdio: 'inherit',
-          cwd: process.cwd(),
-          env: { ...process.env },
-          timeout: 60000 // 60 secondes de timeout
-        });
-        console.log('✅ Schéma synchronisé');
-      } catch (error: any) {
-        console.error('❌ Erreur lors de la synchronisation:', error.message);
-        console.error('Stack:', error.stack);
-        // Ne pas continuer si la synchronisation échoue
-        initializing = false;
-        return;
-      }
-    }
-    
-    // Attendre un peu pour que la base de données soit prête
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     // Initialiser le compte admin
+    // Note: Ne pas appeler db push ici - cela doit être fait dans le build/postinstall
     console.log('🔧 Initialisation du compte admin...');
     await initAdmin();
     initialized = true;
