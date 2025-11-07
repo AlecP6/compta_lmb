@@ -86,6 +86,26 @@ const initialize = async () => {
   }
 };
 
+// Middleware pour forcer l'initialisation avant de traiter les requêtes
+app.use(async (req, res, next) => {
+  // Ne pas bloquer /api/health
+  if (req.path === '/api/health') {
+    return next();
+  }
+  
+  // Attendre que l'initialisation soit terminée
+  if (!initialized && !initializing) {
+    await initialize();
+  } else if (initializing) {
+    // Attendre que l'initialisation en cours se termine
+    while (initializing) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+  
+  next();
+});
+
 // Initialiser au démarrage (de manière asynchrone pour ne pas bloquer)
 initialize().catch(console.error);
 
