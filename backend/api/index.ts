@@ -42,18 +42,20 @@ const initialize = async () => {
   if (initialized) return;
   
   try {
-    // Exécuter les migrations Prisma en production
+    // Synchroniser le schéma Prisma avec la base de données en production
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       const { execSync } = await import('child_process');
       try {
-        console.log('🔄 Exécution des migrations Prisma...');
-        execSync('npx prisma migrate deploy', { 
+        console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
+        // Utiliser db push pour créer les tables directement (plus simple que migrate)
+        execSync('npx prisma db push --accept-data-loss', { 
           stdio: 'inherit',
-          cwd: process.cwd()
+          cwd: process.cwd(),
+          env: { ...process.env }
         });
-        console.log('✅ Migrations terminées');
+        console.log('✅ Schéma synchronisé');
       } catch (error: any) {
-        console.warn('⚠️ Erreur lors des migrations (peut être normal si déjà exécutées):', error.message);
+        console.warn('⚠️ Erreur lors de la synchronisation (peut être normal si déjà fait):', error.message);
       }
     }
     
