@@ -1,3 +1,5 @@
-# Ignorer les migrations pour éviter les conflits
-prisma/migrations/*
-
+# Ignorer les fichiers qui ne sont pas nécessaires pour Vercel
+src/
+dist/
+*.db
+*.log
