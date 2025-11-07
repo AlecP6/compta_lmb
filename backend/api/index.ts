@@ -1,91 +1,242 @@
-// Point d'entrée pour Vercel Serverless Functions
+// Backend simple - Tout en un seul fichier
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from '../src/routes/auth.js';
-import transactionRoutes from '../src/routes/transactions.js';
-import { initAdmin } from '../src/scripts/initAdmin.js';
-
-dotenv.config();
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const app = express();
+const prisma = new PrismaClient();
 
-// Configuration CORS pour permettre les requêtes depuis Netlify
-const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      callback(null, true);
-    } else if (origin.includes('netlify.app') || origin.includes('netlify.com') || origin.includes('vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(null, true);
-    }
-  },
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+// Middleware
+app.use(cors());
 app.use(express.json());
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API de comptabilité fonctionnelle' });
+  res.json({ status: 'OK', message: 'API fonctionnelle' });
 });
 
-// Initialiser le compte admin et les migrations (une seule fois)
-let initialized = false;
-let initializing = false;
+// ===== AUTHENTIFICATION =====
 
-const initialize = async () => {
-  if (initialized || initializing) return;
-  initializing = true;
-  
+// Inscription
+app.post('/api/auth/register', async (req, res) => {
   try {
-    // Initialiser le compte admin
-    // Note: Ne pas appeler db push ici - cela doit être fait dans le build/postinstall
-    console.log('🔧 Initialisation du compte admin...');
-    await initAdmin();
-    initialized = true;
-    initializing = false;
-    console.log('✅ Initialisation terminée');
+    const { username, password, name } = req.body;
+
+    if (!username || !password || !name) {
+      return res.status(400).json({ error: 'Tous les champs sont requis' });
+    }
+
+    if (username.length < 3) {
+      return res.status(400).json({ error: 'L\'identifiant doit contenir au moins 3 caractères' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+    }
+
+    // Vérifier si l'utilisateur existe
+    const existingUser = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Cet identifiant est déjà utilisé' });
+    }
+
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Créer l'utilisateur
+    const user = await prisma.user.create({
+      data: { username, password: hashedPassword, name },
+    });
+
+    // Générer un token
+    const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+
+    res.status(201).json({
+      token,
+      user: { id: user.id, username: user.username, name: user.name },
+    });
   } catch (error: any) {
-    console.error('❌ Erreur lors de l\'initialisation:', error.message);
-    console.error('Stack:', error.stack);
-    initializing = false;
-    // Ne pas bloquer le démarrage, mais loguer l'erreur
+    console.error('Erreur inscription:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
+});
+
+// Connexion
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
+    }
+
+    // Trouver l'utilisateur
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
+    }
+
+    // Vérifier le mot de passe
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
+    }
+
+    // Générer un token
+    const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+
+    res.json({
+      token,
+      user: { id: user.id, username: user.username, name: user.name },
+    });
+  } catch (error: any) {
+    console.error('Erreur connexion:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Middleware d'authentification
+const authenticate = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token manquant' });
+  }
+
+  const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
+  jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token invalide' });
+    }
+    (req as any).userId = decoded.userId;
+    next();
+  });
 };
 
-// Middleware pour forcer l'initialisation avant de traiter les requêtes
-app.use(async (req, res, next) => {
-  // Ne pas bloquer /api/health
-  if (req.path === '/api/health') {
-    return next();
-  }
-  
-  // Attendre que l'initialisation soit terminée
-  if (!initialized && !initializing) {
-    await initialize();
-  } else if (initializing) {
-    // Attendre que l'initialisation en cours se termine
-    while (initializing) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+// Obtenir l'utilisateur connecté
+app.get('/api/auth/me', authenticate, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, name: true, createdAt: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
+
+    res.json({ user });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
-  
-  next();
 });
 
-// Initialiser au démarrage (de manière asynchrone pour ne pas bloquer)
-initialize().catch(console.error);
+// ===== TRANSACTIONS =====
 
-// Export pour Vercel - Handler pour serverless functions
+// Obtenir toutes les transactions
+app.get('/api/transactions', authenticate, async (req, res) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      include: {
+        user: {
+          select: { id: true, name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    // Calculer le solde
+    const allTransactions = await prisma.transaction.findMany();
+    const balance = allTransactions.reduce((acc, t) => {
+      return t.type === 'INCOME' ? acc + t.amount : acc - t.amount;
+    }, 0);
+
+    res.json({ transactions, balance });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Créer une transaction
+app.post('/api/transactions', authenticate, async (req, res) => {
+  try {
+    const { type, amount, description, category } = req.body;
+    const userId = (req as any).userId;
+
+    if (!type || !amount || !description) {
+      return res.status(400).json({ error: 'Type, montant et description requis' });
+    }
+
+    if (type !== 'INCOME' && type !== 'EXPENSE') {
+      return res.status(400).json({ error: 'Type doit être INCOME ou EXPENSE' });
+    }
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        type,
+        amount: parseFloat(amount),
+        description,
+        category: category || null,
+        userId,
+      },
+      include: {
+        user: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    res.status(201).json({ transaction });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Supprimer une transaction
+app.delete('/api/transactions/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).userId;
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction non trouvée' });
+    }
+
+    if (transaction.userId !== userId) {
+      return res.status(403).json({ error: 'Non autorisé' });
+    }
+
+    await prisma.transaction.delete({
+      where: { id },
+    });
+
+    res.json({ message: 'Transaction supprimée' });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Export pour Vercel
 export default app;
-
-// Alternative: Export explicite pour Vercel
-// Vercel détecte automatiquement l'export default comme handler
-

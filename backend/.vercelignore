@@ -1,5 +1,5 @@
-# Ignorer les fichiers qui ne sont pas nécessaires pour Vercel
 dist/
 *.db
 *.log
-src/server.ts
+src/
+node_modules/
