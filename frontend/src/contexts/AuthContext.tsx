@@ -26,34 +26,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-      authService
-        .getCurrentUser(storedToken)
-        .then((userData) => {
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        setToken(storedToken);
+        try {
+          const userData = await authService.getCurrentUser(storedToken);
           if (userData && userData.user) {
             setUser(userData.user);
           } else {
-            // Token invalide ou expiré
+            // Token invalide ou expiré - mais on garde le token pour réessayer
+            console.warn('Réponse utilisateur invalide, mais on garde le token');
+            setUser(null);
+          }
+        } catch (error: any) {
+          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+          // Seulement supprimer le token si c'est une erreur 401/403 (non autorisé)
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            console.log('Token invalide ou expiré, suppression');
             localStorage.removeItem('token');
             setToken(null);
             setUser(null);
+          } else {
+            // Pour les autres erreurs (réseau, serveur), on garde le token
+            console.log('Erreur réseau ou serveur, on garde le token pour réessayer');
+            setUser(null);
           }
-        })
-        .catch((error) => {
-          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-          // Token invalide ou expiré
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
-        })
-        .finally(() => {
+        } finally {
           setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const login = useCallback(async (username: string, password: string) => {

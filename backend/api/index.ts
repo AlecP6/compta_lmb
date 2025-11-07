@@ -150,6 +150,26 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
   }
 });
 
+// Route alternative pour /api/me
+app.get('/api/me', authenticate, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, name: true, createdAt: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    res.json({ user });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ===== TRANSACTIONS =====
 
 // Obtenir toutes les transactions
