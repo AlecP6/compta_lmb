@@ -52,8 +52,8 @@ const initialize = async () => {
         console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
         console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Défini' : 'NON DÉFINI');
         
-        // Utiliser db push pour créer les tables directement (plus simple que migrate)
-        execSync('npx prisma db push --accept-data-loss --skip-generate', { 
+        // Utiliser prisma directement (sans npx) car il est déjà installé
+        execSync('node_modules/.bin/prisma db push --accept-data-loss --skip-generate', { 
           stdio: 'inherit',
           cwd: process.cwd(),
           env: { ...process.env },
