@@ -155,6 +155,9 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 // Obtenir toutes les transactions
 app.get('/api/transactions', authenticate, async (req, res) => {
   try {
+    const userId = (req as any).userId;
+    console.log('📋 Récupération transactions pour userId:', userId);
+
     const transactions = await prisma.transaction.findMany({
       include: {
         user: {
@@ -171,10 +174,11 @@ app.get('/api/transactions', authenticate, async (req, res) => {
       return t.type === 'INCOME' ? acc + t.amount : acc - t.amount;
     }, 0);
 
+    console.log(`✅ ${transactions.length} transactions trouvées, solde: ${balance}`);
     res.json({ transactions, balance });
   } catch (error: any) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur récupération transactions:', error);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
   }
 });
 
@@ -184,12 +188,19 @@ app.post('/api/transactions', authenticate, async (req, res) => {
     const { type, amount, description, category } = req.body;
     const userId = (req as any).userId;
 
-    if (!type || !amount || !description) {
+    console.log('📝 Création transaction:', { type, amount, description, category, userId });
+
+    if (!type || amount === undefined || !description) {
+      console.log('❌ Validation échouée:', { type, amount, description });
       return res.status(400).json({ error: 'Type, montant et description requis' });
     }
 
     if (type !== 'INCOME' && type !== 'EXPENSE') {
       return res.status(400).json({ error: 'Type doit être INCOME ou EXPENSE' });
+    }
+
+    if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      return res.status(400).json({ error: 'Le montant doit être un nombre positif' });
     }
 
     const transaction = await prisma.transaction.create({
@@ -207,7 +218,50 @@ app.post('/api/transactions', authenticate, async (req, res) => {
       },
     });
 
+    console.log('✅ Transaction créée:', transaction.id);
     res.status(201).json({ transaction });
+  } catch (error: any) {
+    console.error('❌ Erreur création transaction:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+  }
+});
+
+// Mettre à jour une transaction
+app.put('/api/transactions/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).userId;
+    const { type, amount, description, category } = req.body;
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction non trouvée' });
+    }
+
+    if (transaction.userId !== userId) {
+      return res.status(403).json({ error: 'Non autorisé' });
+    }
+
+    const updated = await prisma.transaction.update({
+      where: { id },
+      data: {
+        ...(type && { type }),
+        ...(amount !== undefined && { amount: parseFloat(amount) }),
+        ...(description && { description }),
+        ...(category !== undefined && { category: category || null }),
+      },
+      include: {
+        user: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    res.json({ transaction: updated });
   } catch (error: any) {
     console.error('Erreur:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -237,6 +291,34 @@ app.delete('/api/transactions/:id', authenticate, async (req, res) => {
     });
 
     res.json({ message: 'Transaction supprimée' });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Statistiques
+app.get('/api/transactions/stats/summary', authenticate, async (req, res) => {
+  try {
+    const allTransactions = await prisma.transaction.findMany();
+
+    const income = allTransactions
+      .filter(t => t.type === 'INCOME')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const expenses = allTransactions
+      .filter(t => t.type === 'EXPENSE')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const balance = income - expenses;
+    const totalTransactions = allTransactions.length;
+
+    res.json({
+      income,
+      expenses,
+      balance,
+      totalTransactions,
+    });
   } catch (error: any) {
     console.error('Erreur:', error);
     res.status(500).json({ error: 'Erreur serveur' });
