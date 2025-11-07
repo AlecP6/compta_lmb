@@ -40,12 +40,29 @@ app.get('/api/health', (req, res) => {
 });
 
 // Initialiser le compte admin au démarrage
-initAdmin().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-  });
-}).catch((error) => {
-  console.error('❌ Erreur lors du démarrage:', error);
-  process.exit(1);
-});
+const startServer = async () => {
+  try {
+    // Exécuter les migrations en production
+    if (process.env.NODE_ENV === 'production') {
+      const { execSync } = await import('child_process');
+      try {
+        console.log('🔄 Exécution des migrations Prisma...');
+        execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+        console.log('✅ Migrations terminées');
+      } catch (error) {
+        console.warn('⚠️ Erreur lors des migrations (peut être normal si déjà exécutées):', error);
+      }
+    }
+    
+    await initAdmin();
+    app.listen(PORT, () => {
+      console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors du démarrage:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
