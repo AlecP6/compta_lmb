@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -22,7 +22,7 @@ router.post(
       .withMessage('Le mot de passe doit contenir au moins 6 caractères'),
     body('name').trim().notEmpty().withMessage('Le nom est requis'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -84,7 +84,7 @@ router.post(
     body('username').trim().notEmpty().withMessage('L\'identifiant est requis'),
     body('password').notEmpty().withMessage('Le mot de passe est requis'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {

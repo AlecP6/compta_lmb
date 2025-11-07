@@ -7,14 +7,9 @@ export async function fixExistingUsers() {
     console.log('🔧 Correction des utilisateurs existants...');
 
     // Récupérer tous les utilisateurs (même ceux sans username)
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          { username: null },
-          { username: '' },
-        ],
-      },
-    });
+    // Note: Pour PostgreSQL, on ne peut pas chercher null directement, donc on récupère tous et on filtre
+    const allUsers = await prisma.user.findMany();
+    const users = allUsers.filter(u => !u.username || u.username === '');
 
     for (const user of users) {
       // Générer un username basé sur l'email ou créer un nom unique
