@@ -1,7 +1,6 @@
 {
   "version": 2,
   "buildCommand": "npm install && npm run vercel-build",
-  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",
