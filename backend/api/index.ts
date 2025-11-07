@@ -55,8 +55,9 @@ const initialize = async () => {
         console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
         console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Défini' : 'NON DÉFINI');
         
-        // Utiliser prisma directement (sans npx) car il est déjà installé
-        execSync('node_modules/.bin/prisma db push --accept-data-loss --skip-generate', { 
+        // Utiliser prisma avec le chemin complet depuis node_modules
+        const prismaCliPath = require.resolve('prisma/build/index.js');
+        execSync(`node "${prismaCliPath}" db push --accept-data-loss --skip-generate`, { 
           stdio: 'inherit',
           cwd: process.cwd(),
           env: { ...process.env },
