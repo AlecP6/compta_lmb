@@ -2,9 +2,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createRequire } from 'module';
 import authRoutes from '../src/routes/auth.js';
 import transactionRoutes from '../src/routes/transactions.js';
 import { initAdmin } from '../src/scripts/initAdmin.js';
+
+const require = createRequire(import.meta.url);
 
 dotenv.config();
 
