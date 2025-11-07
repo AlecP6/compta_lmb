@@ -8,7 +8,7 @@ import { initAdmin } from './scripts/initAdmin.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || process.env.VERCEL_PORT || 3001;
 
 // Configuration CORS pour permettre les requêtes depuis Netlify
 const corsOptions = {
