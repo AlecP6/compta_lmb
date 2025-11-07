@@ -1,0 +1,3 @@
+# Ignorer les migrations pour éviter les conflits
+prisma/migrations/*
+

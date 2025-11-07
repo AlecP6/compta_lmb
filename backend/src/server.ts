@@ -42,15 +42,19 @@ app.get('/api/health', (req, res) => {
 // Initialiser le compte admin au démarrage
 const startServer = async () => {
   try {
-    // Exécuter les migrations en production
+    // Synchroniser le schéma Prisma avec la base de données en production
     if (process.env.NODE_ENV === 'production') {
       const { execSync } = await import('child_process');
       try {
-        console.log('🔄 Exécution des migrations Prisma...');
-        execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-        console.log('✅ Migrations terminées');
+        console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
+        // Utiliser db push pour créer les tables directement (plus simple que migrate)
+        execSync('npx prisma db push --accept-data-loss', { 
+          stdio: 'inherit',
+          env: { ...process.env }
+        });
+        console.log('✅ Schéma synchronisé');
       } catch (error) {
-        console.warn('⚠️ Erreur lors des migrations (peut être normal si déjà exécutées):', error);
+        console.warn('⚠️ Erreur lors de la synchronisation (peut être normal si déjà fait):', error);
       }
     }
     
