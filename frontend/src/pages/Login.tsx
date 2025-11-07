@@ -20,7 +20,18 @@ const Login = () => {
       await login(username, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Erreur lors de la connexion');
+      console.error('Erreur connexion:', err);
+      let errorMessage = 'Erreur lors de la connexion';
+      
+      if (err.response) {
+        errorMessage = err.response.data?.error || 'Identifiant ou mot de passe incorrect';
+      } else if (err.request) {
+        errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+      } else {
+        errorMessage = err.message || 'Erreur lors de la connexion';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
