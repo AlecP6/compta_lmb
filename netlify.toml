@@ -1,0 +1,13 @@
+[build]
+  command = "cd frontend && npm install && npm run build"
+  publish = "frontend/dist"
+
+# Redirection pour les routes React (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Note: Les requêtes API seront gérées via la variable d'environnement VITE_API_URL
+# Configurez cette variable dans les paramètres Netlify avec l'URL de votre backend
+

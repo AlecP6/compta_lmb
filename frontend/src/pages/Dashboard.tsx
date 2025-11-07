@@ -1,0 +1,183 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { transactionService } from '../services/transactionService';
+import TransactionList from '../components/TransactionList';
+import TransactionForm from '../components/TransactionForm';
+import StatsCard from '../components/StatsCard';
+import './Dashboard.css';
+
+interface Transaction {
+  id: string;
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;
+  description: string;
+  category: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface Stats {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  totalTransactions: number;
+}
+
+const Dashboard = () => {
+  const { user, logout } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [balance, setBalance] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
+  const [showForm, setShowForm] = useState(false);
+
+  const loadTransactions = useCallback(async () => {
+    try {
+      setLoading(true);
+      const filters: any = {};
+      if (filter !== 'ALL') {
+        filters.type = filter;
+      }
+      const data = await transactionService.getAllTransactions(filters);
+      setTransactions(data.transactions);
+      setBalance(data.balance);
+    } catch (error) {
+      console.error('Erreur lors du chargement des transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filter]);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const data = await transactionService.getStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTransactions();
+    loadStats();
+  }, [loadTransactions, loadStats]);
+
+  const handleTransactionCreated = useCallback(() => {
+    loadTransactions();
+    loadStats();
+    setShowForm(false);
+  }, [loadTransactions, loadStats]);
+
+  const handleTransactionDeleted = useCallback(() => {
+    loadTransactions();
+    loadStats();
+  }, [loadTransactions, loadStats]);
+
+  const formatCurrency = useCallback((amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(amount);
+  }, []);
+
+  const formattedBalance = useMemo(() => formatCurrency(balance), [balance, formatCurrency]);
+  const formattedIncome = useMemo(() => stats ? formatCurrency(stats.totalIncome) : '', [stats?.totalIncome, formatCurrency]);
+  const formattedExpense = useMemo(() => stats ? formatCurrency(stats.totalExpense) : '', [stats?.totalExpense, formatCurrency]);
+
+  return (
+    <div className="dashboard">
+      <header className="dashboard-header">
+        <div>
+          <h1>Compta LMB</h1>
+          <p className="welcome-text">Bienvenue, {user?.name} !</p>
+        </div>
+        <button onClick={logout} className="btn-logout">
+          Déconnexion
+        </button>
+      </header>
+
+      <div className="dashboard-content">
+        <div className="stats-section">
+          <StatsCard
+            title="Solde Total"
+            value={formattedBalance}
+            type="balance"
+            positive={balance >= 0}
+          />
+          {stats && (
+            <>
+              <StatsCard
+                title="Total Entrées"
+                value={formattedIncome}
+                type="income"
+              />
+              <StatsCard
+                title="Total Sorties"
+                value={formattedExpense}
+                type="expense"
+              />
+            </>
+          )}
+        </div>
+
+        <div className="main-section">
+          <div className="section-header">
+            <h2>Transactions</h2>
+            <div className="header-actions">
+              <div className="filter-buttons">
+                <button
+                  className={filter === 'ALL' ? 'active' : ''}
+                  onClick={() => setFilter('ALL')}
+                >
+                  Toutes
+                </button>
+                <button
+                  className={filter === 'INCOME' ? 'active' : ''}
+                  onClick={() => setFilter('INCOME')}
+                >
+                  Entrées
+                </button>
+                <button
+                  className={filter === 'EXPENSE' ? 'active' : ''}
+                  onClick={() => setFilter('EXPENSE')}
+                >
+                  Sorties
+                </button>
+              </div>
+              <button
+                className="btn-add"
+                onClick={() => setShowForm(!showForm)}
+              >
+                {showForm ? 'Annuler' : '+ Ajouter'}
+              </button>
+            </div>
+          </div>
+
+          {showForm && (
+            <TransactionForm
+              onTransactionCreated={handleTransactionCreated}
+              onCancel={() => setShowForm(false)}
+            />
+          )}
+
+          {loading ? (
+            <div className="loading">Chargement...</div>
+          ) : (
+            <TransactionList
+              transactions={transactions}
+              onTransactionDeleted={handleTransactionDeleted}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+

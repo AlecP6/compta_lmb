@@ -1,0 +1,108 @@
+.stats-card {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    var(--shadow-lg);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #ffffff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.stats-card:hover {
+  transform: translate3d(0, -4px, 0);
+  box-shadow: var(--shadow-lg);
+}
+
+.stats-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stats-card-icon {
+  font-size: 40px;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  filter: grayscale(100%) brightness(1.2);
+}
+
+.stats-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-card-content h3 {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.stats-card-value {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.2;
+  word-break: break-word;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.stats-card-balance .stats-card-value {
+  color: #ffffff;
+  font-size: 36px;
+}
+
+.stats-card-balance.negative .stats-card-value {
+  color: #ffffff;
+  opacity: 0.7;
+}
+
+.stats-card-income .stats-card-icon {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.stats-card-income .stats-card-value {
+  color: #ffffff;
+}
+
+.stats-card-expense .stats-card-icon {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stats-card-expense .stats-card-value {
+  color: #ffffff;
+  opacity: 0.9;
+}
+
