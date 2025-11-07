@@ -36,21 +36,42 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API de comptabilité fonctionnelle' });
 });
 
-// Initialiser le compte admin au démarrage (une seule fois)
-let adminInitialized = false;
-const initializeAdmin = async () => {
-  if (!adminInitialized) {
-    try {
-      await initAdmin();
-      adminInitialized = true;
-    } catch (error) {
-      console.error('Erreur lors de l\'initialisation admin:', error);
+// Initialiser le compte admin et les migrations (une seule fois)
+let initialized = false;
+const initialize = async () => {
+  if (initialized) return;
+  
+  try {
+    // Exécuter les migrations Prisma en production
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      const { execSync } = await import('child_process');
+      try {
+        console.log('🔄 Exécution des migrations Prisma...');
+        execSync('npx prisma migrate deploy', { 
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        console.log('✅ Migrations terminées');
+      } catch (error: any) {
+        console.warn('⚠️ Erreur lors des migrations (peut être normal si déjà exécutées):', error.message);
+      }
+    }
+    
+    // Initialiser le compte admin
+    await initAdmin();
+    initialized = true;
+    console.log('✅ Initialisation terminée');
+  } catch (error: any) {
+    console.error('❌ Erreur lors de l\'initialisation:', error.message);
+    // Ne pas bloquer le démarrage si l'admin existe déjà
+    if (!error.message?.includes('Unique constraint')) {
+      console.error('Détails:', error);
     }
   }
 };
 
-// Initialiser au démarrage
-initializeAdmin();
+// Initialiser au démarrage (de manière asynchrone pour ne pas bloquer)
+initialize().catch(console.error);
 
 // Export pour Vercel
 export default app;

@@ -5,13 +5,19 @@ import { fixExistingUsers } from './fixExistingUsers.js';
 const prisma = new PrismaClient();
 
 export async function initAdmin() {
+  const prismaAdmin = new PrismaClient();
+  
   try {
     // D'abord, corriger les utilisateurs existants sans username
-    await fixExistingUsers();
+    try {
+      await fixExistingUsers();
+    } catch (error: any) {
+      // Ignorer si la fonction n'existe pas ou si la colonne n'existe pas encore
+      if (!error.message?.includes('no such column') && !error.message?.includes('Cannot find')) {
+        console.warn('⚠️ Erreur lors de la correction des utilisateurs:', error.message);
+      }
+    }
 
-    // Créer une nouvelle instance pour éviter les problèmes de connexion
-    const prismaAdmin = new PrismaClient();
-    
     console.log('🔧 Vérification du compte admin...');
 
     // Vérifier si l'utilisateur admin existe déjà
@@ -45,10 +51,19 @@ export async function initAdmin() {
     console.log(`   Mot de passe: Switch57220`);
     
     await prismaAdmin.$disconnect();
-  } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation de l\'admin:', error);
+  } catch (error: any) {
+    console.error('❌ Erreur lors de l\'initialisation de l\'admin:', error.message || error);
+    // Ne pas throw pour ne pas bloquer le serveur
+    if (error.message?.includes('P1001') || error.message?.includes('Can\'t reach database')) {
+      console.error('⚠️ Impossible de se connecter à la base de données. Vérifiez DATABASE_URL.');
+    }
   } finally {
-    await prisma.$disconnect();
+    try {
+      await prismaAdmin.$disconnect();
+      await prisma.$disconnect();
+    } catch (e) {
+      // Ignorer les erreurs de déconnexion
+    }
   }
 }
 
