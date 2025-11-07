@@ -14,32 +14,14 @@ Vercel ne détecte pas automatiquement `api/index.ts` comme fonction serverless,
 
 ## ✅ Solution Appliquée
 
-Ajout de la configuration explicite `functions` dans `vercel.json` :
+**IMPORTANT** : La configuration `functions` avec `runtime` a causé une erreur. Vercel détecte automatiquement les fonctions dans `api/`.
 
-**Avant** :
+Configuration finale dans `vercel.json` :
+
 ```json
 {
   "version": 2,
   "buildCommand": "npm install && npm run build",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/index.ts"
-    }
-  ]
-}
-```
-
-**Après** :
-```json
-{
-  "version": 2,
-  "buildCommand": "npm install && npm run build",
-  "functions": {
-    "api/index.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
@@ -50,10 +32,11 @@ Ajout de la configuration explicite `functions` dans `vercel.json` :
 ```
 
 **Pourquoi** :
-- ✅ Indique explicitement à Vercel que `api/index.ts` est une fonction serverless
-- ✅ Utilise le runtime `@vercel/node` pour Node.js/Express/TypeScript
-- ✅ Vercel compilera automatiquement le TypeScript
+- ✅ Vercel détecte automatiquement les fichiers dans `api/` comme fonctions serverless
+- ✅ Vercel utilise automatiquement le runtime Node.js 20.x (spécifié dans `package.json` via `engines`)
+- ✅ Vercel compile automatiquement le TypeScript
 - ✅ Les rewrites routeront toutes les requêtes vers cette fonction
+- ✅ Pas besoin de configuration `functions` explicite
 
 ## 📝 Vérifications Nécessaires
 
