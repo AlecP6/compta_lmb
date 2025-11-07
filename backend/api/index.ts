@@ -75,6 +75,9 @@ const initialize = async () => {
 // Initialiser au démarrage (de manière asynchrone pour ne pas bloquer)
 initialize().catch(console.error);
 
-// Export pour Vercel
+// Export pour Vercel - Handler pour serverless functions
 export default app;
+
+// Alternative: Export explicite pour Vercel
+// Vercel détecte automatiquement l'export default comme handler
 
