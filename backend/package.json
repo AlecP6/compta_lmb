@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && prisma generate",
     "postinstall": "prisma generate",
     "start": "node dist/server.js",
+    "vercel-build": "prisma generate && prisma migrate deploy && tsc",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
