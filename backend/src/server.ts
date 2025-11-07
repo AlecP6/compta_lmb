@@ -42,21 +42,9 @@ app.get('/api/health', (req, res) => {
 // Initialiser le compte admin au démarrage
 const startServer = async () => {
   try {
-    // Synchroniser le schéma Prisma avec la base de données en production
-    if (process.env.NODE_ENV === 'production') {
-      const { execSync } = await import('child_process');
-      try {
-        console.log('🔄 Synchronisation du schéma Prisma avec la base de données...');
-        // Utiliser db push pour créer les tables directement (plus simple que migrate)
-        execSync('npx prisma db push --accept-data-loss', { 
-          stdio: 'inherit',
-          env: { ...process.env }
-        });
-        console.log('✅ Schéma synchronisé');
-      } catch (error) {
-        console.warn('⚠️ Erreur lors de la synchronisation (peut être normal si déjà fait):', error);
-      }
-    }
+    // Note: Ne pas appeler db push ici - cela doit être fait manuellement
+    // en développement via: npm run prisma:db:push
+    // ou via migrations en production: npm run prisma:migrate:deploy
     
     await initAdmin();
     app.listen(PORT, () => {
