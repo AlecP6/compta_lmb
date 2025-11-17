@@ -6,15 +6,34 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const app = express();
-const prisma = new PrismaClient();
+
+// Initialiser Prisma avec gestion d'erreur
+let prisma: PrismaClient;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error('❌ Erreur initialisation Prisma:', error);
+  // Créer un client Prisma même en cas d'erreur pour éviter le crash
+  prisma = new PrismaClient();
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Route de santé
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API fonctionnelle' });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Tester la connexion à la base de données
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'OK', message: 'API fonctionnelle', database: 'connected' });
+  } catch (error: any) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'API fonctionnelle mais base de données non accessible',
+      error: error.message 
+    });
+  }
 });
 
 // Route catch-all pour debug
