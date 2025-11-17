@@ -35,7 +35,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [showForm, setShowForm] = useState(false);
@@ -49,7 +48,6 @@ const Dashboard = () => {
       }
       const data = await transactionService.getAllTransactions(filters);
       setTransactions(data.transactions);
-      setBalance(data.balance);
     } catch (error) {
       console.error('Erreur lors du chargement des transactions:', error);
     } finally {
