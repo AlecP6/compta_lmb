@@ -234,15 +234,24 @@ app.get('/api/transactions', authenticate, async (req, res) => {
     const userId = (req as any).userId;
     console.log('📋 Récupération transactions pour userId:', userId);
 
+    // Récupérer les transactions sans include pour éviter les erreurs si relations manquantes
     const transactions = await prisma.transaction.findMany({
-      include: {
-        user: {
-          select: { id: true, name: true },
-        },
-      },
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
+
+    // Récupérer les utilisateurs séparément pour éviter les erreurs de relation
+    const userIds = [...new Set(transactions.map(t => t.userId))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+    });
+    const userMap = new Map(users.map(u => [u.id, { id: u.id, name: u.name }]));
+
+    // Ajouter les informations utilisateur aux transactions
+    const transactionsWithUser = transactions.map(t => ({
+      ...t,
+      user: userMap.get(t.userId) || { id: t.userId, name: 'Utilisateur inconnu' }
+    }));
 
     // Calculer le solde
     const allTransactions = await prisma.transaction.findMany();
@@ -251,7 +260,7 @@ app.get('/api/transactions', authenticate, async (req, res) => {
     }, 0);
 
     console.log(`✅ ${transactions.length} transactions trouvées, solde: ${balance}`);
-    res.json({ transactions, balance });
+    res.json({ transactions: transactionsWithUser, balance });
   } catch (error: any) {
     console.error('❌ Erreur récupération transactions:', error);
     res.status(500).json({ error: 'Erreur serveur', details: error.message });
