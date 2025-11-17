@@ -159,10 +159,9 @@ const authenticate = (req: express.Request, res: express.Response, next: express
 app.get('/api/auth/me', authenticate, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    // @ts-ignore - isAdmin sera disponible après prisma generate
+    // Récupérer l'utilisateur sans select pour éviter les erreurs si colonnes manquantes
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, username: true, name: true, isAdmin: true, createdAt: true },
     });
 
     if (!user) {
@@ -171,7 +170,10 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 
     res.json({ 
       user: {
-        ...user,
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        createdAt: user.createdAt,
         isAdmin: (user as any).isAdmin || false
       }
     });
@@ -185,10 +187,9 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 app.get('/api/me', authenticate, async (req, res) => {
   try {
     const userId = (req as any).userId;
-    // @ts-ignore - isAdmin sera disponible après prisma generate
+    // Récupérer l'utilisateur sans select pour éviter les erreurs si colonnes manquantes
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, username: true, name: true, isAdmin: true, createdAt: true },
     });
 
     if (!user) {
@@ -197,7 +198,10 @@ app.get('/api/me', authenticate, async (req, res) => {
 
     res.json({ 
       user: {
-        ...user,
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        createdAt: user.createdAt,
         isAdmin: (user as any).isAdmin || false
       }
     });
