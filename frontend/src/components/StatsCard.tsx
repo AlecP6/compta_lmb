@@ -4,7 +4,7 @@ import './StatsCard.css';
 interface StatsCardProps {
   title: string;
   value: string;
-  type: 'balance' | 'income' | 'expense';
+  type: 'balance' | 'income' | 'expense' | 'argent_propre' | 'argent_sale';
   positive?: boolean;
 }
 
@@ -17,6 +17,10 @@ const StatsCard = memo(({ title, value, type, positive = true }: StatsCardProps)
         return '📈';
       case 'expense':
         return '📉';
+      case 'argent_propre':
+        return '💰';
+      case 'argent_sale':
+        return '💵';
       default:
         return '💵';
     }

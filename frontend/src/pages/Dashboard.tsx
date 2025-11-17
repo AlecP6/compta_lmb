@@ -26,6 +26,8 @@ interface Stats {
   expenses: number;
   balance: number;
   totalTransactions: number;
+  argentPropreBalance: number;
+  argentSaleBalance: number;
 }
 
 const Dashboard = () => {
@@ -96,9 +98,14 @@ const Dashboard = () => {
     }).format(amount);
   }, []);
 
-  const formattedBalance = useMemo(() => formatCurrency(balance), [balance, formatCurrency]);
-  const formattedIncome = useMemo(() => stats ? formatCurrency(stats.income) : '', [stats?.income, formatCurrency]);
-  const formattedExpense = useMemo(() => stats ? formatCurrency(stats.expenses) : '', [stats?.expenses, formatCurrency]);
+  const formattedArgentPropre = useMemo(() => 
+    stats ? formatCurrency(stats.argentPropreBalance) : '0,00 €', 
+    [stats?.argentPropreBalance, formatCurrency]
+  );
+  const formattedArgentSale = useMemo(() => 
+    stats ? formatCurrency(stats.argentSaleBalance) : '0,00 €', 
+    [stats?.argentSaleBalance, formatCurrency]
+  );
 
   return (
     <div className="dashboard">
@@ -121,23 +128,19 @@ const Dashboard = () => {
 
       <div className="dashboard-content">
         <div className="stats-section">
-          <StatsCard
-            title="Solde Total"
-            value={formattedBalance}
-            type="balance"
-            positive={balance >= 0}
-          />
           {stats && (
             <>
               <StatsCard
-                title="Total Entrées"
-                value={formattedIncome}
-                type="income"
+                title="💰 Argent Propre"
+                value={formattedArgentPropre}
+                type="argent_propre"
+                positive={stats.argentPropreBalance >= 0}
               />
               <StatsCard
-                title="Total Sorties"
-                value={formattedExpense}
-                type="expense"
+                title="💵 Argent Sale"
+                value={formattedArgentSale}
+                type="argent_sale"
+                positive={stats.argentSaleBalance >= 0}
               />
             </>
           )}

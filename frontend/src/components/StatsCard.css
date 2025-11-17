@@ -106,3 +106,21 @@
   opacity: 0.9;
 }
 
+.stats-card-argent_propre .stats-card-icon {
+  background: rgba(56, 239, 125, 0.15);
+  border-color: rgba(56, 239, 125, 0.3);
+}
+
+.stats-card-argent_propre .stats-card-value {
+  color: #ffffff;
+}
+
+.stats-card-argent_sale .stats-card-icon {
+  background: rgba(255, 106, 0, 0.15);
+  border-color: rgba(255, 106, 0, 0.3);
+}
+
+.stats-card-argent_sale .stats-card-value {
+  color: #ffffff;
+}
+
