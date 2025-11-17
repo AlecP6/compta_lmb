@@ -127,19 +127,35 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
     }
 
+    console.log('🔐 Tentative de connexion pour:', username);
+
     // Trouver l'utilisateur
-    const user = await prisma.user.findUnique({
-      where: { username },
-    });
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { username },
+      });
+    } catch (dbError: any) {
+      console.error('❌ Erreur base de données lors de la recherche utilisateur:', dbError.message);
+      console.error('Stack:', dbError.stack);
+      return res.status(500).json({ 
+        error: 'Erreur base de données', 
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined 
+      });
+    }
 
     if (!user) {
+      console.log('❌ Utilisateur non trouvé:', username);
       return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
     }
+
+    console.log('✅ Utilisateur trouvé:', user.id);
 
     // Vérifier le mot de passe
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
+      console.log('❌ Mot de passe incorrect pour:', username);
       return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
     }
 
@@ -147,14 +163,24 @@ app.post('/api/auth/login', async (req, res) => {
     const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
     const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
 
+    console.log('✅ Connexion réussie pour:', username);
+
     res.json({
       token,
-      // @ts-ignore - isAdmin sera disponible après prisma generate
-      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        name: user.name, 
+        isAdmin: (user as any).isAdmin || false 
+      },
     });
   } catch (error: any) {
-    console.error('Erreur connexion:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur connexion:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 });
 
