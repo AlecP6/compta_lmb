@@ -64,8 +64,12 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.status(201).json({
       token,
-      // @ts-ignore - isAdmin sera disponible après prisma generate
-      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        name: user.name, 
+        isAdmin: (user as any).isAdmin || false 
+      },
     });
   } catch (error: any) {
     console.error('Erreur inscription:', error);
@@ -83,7 +87,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Trouver l'utilisateur
-    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({
       where: { username },
     });
@@ -147,7 +150,12 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.json({ user });
+    res.json({ 
+      user: {
+        ...user,
+        isAdmin: (user as any).isAdmin || false
+      }
+    });
   } catch (error: any) {
     console.error('Erreur:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -168,7 +176,12 @@ app.get('/api/me', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
-    res.json({ user });
+    res.json({ 
+      user: {
+        ...user,
+        isAdmin: (user as any).isAdmin || false
+      }
+    });
   } catch (error: any) {
     console.error('Erreur:', error);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -179,14 +192,11 @@ app.get('/api/me', authenticate, async (req, res) => {
 const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
     const userId = (req as any).userId;
-    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { isAdmin: true },
     });
 
-    // @ts-ignore - isAdmin sera disponible après prisma generate
-    if (!user || !user.isAdmin) {
+    if (!user || !(user as any).isAdmin) {
       return res.status(403).json({ error: 'Accès admin requis' });
     }
 
@@ -335,8 +345,8 @@ app.delete('/api/transactions/:id', authenticate, async (req, res) => {
     }
 
     // Logger la suppression avant de supprimer
-    // @ts-ignore - deletionLog sera disponible après prisma generate
-    await prisma.deletionLog.create({
+    try {
+      await (prisma as any).deletionLog.create({
       data: {
         transactionId: transaction.id,
         deletedBy: userId,
@@ -344,7 +354,11 @@ app.delete('/api/transactions/:id', authenticate, async (req, res) => {
         amount: transaction.amount,
         description: transaction.description,
       },
-    });
+      });
+    } catch (logError) {
+      // Ignorer les erreurs de log si la table n'existe pas
+      console.warn('Impossible de logger la suppression:', logError);
+    }
 
     await prisma.transaction.delete({
       where: { id },
@@ -390,8 +404,7 @@ app.get('/api/transactions/stats/summary', authenticate, async (req, res) => {
 // Logs de suppressions (admin uniquement)
 app.get('/api/admin/deletion-logs', authenticate, requireAdmin, async (req, res) => {
   try {
-    // @ts-ignore - deletionLog sera disponible après prisma generate
-    const logs = await prisma.deletionLog.findMany({
+    const logs = await (prisma as any).deletionLog.findMany({
       include: {
         deletedByUser: {
           select: { id: true, username: true, name: true },
@@ -488,7 +501,6 @@ app.post('/api/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.create({
       data: { username, password: hashedPassword, name },
     });
@@ -498,8 +510,12 @@ app.post('/api/register', async (req, res) => {
 
     res.status(201).json({
       token,
-      // @ts-ignore - isAdmin sera disponible après prisma generate
-      user: { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin || false },
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        name: user.name, 
+        isAdmin: (user as any).isAdmin || false 
+      },
     });
   } catch (error: any) {
     console.error('Erreur inscription:', error);
@@ -515,7 +531,6 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Identifiant et mot de passe requis' });
     }
 
-    // @ts-ignore - isAdmin sera disponible après prisma generate
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) {
       return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect' });
