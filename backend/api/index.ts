@@ -17,6 +17,49 @@ try {
   prisma = new PrismaClient();
 }
 
+// Initialiser le compte admin au démarrage (de manière asynchrone)
+(async () => {
+  try {
+    console.log('🔧 Vérification du compte admin...');
+    
+    // Vérifier si l'utilisateur admin existe déjà
+    let admin = await prisma.user.findUnique({
+      where: { username: 'Switch' },
+    });
+
+    if (admin) {
+      // Mettre à jour le mot de passe au cas où
+      const hashedPassword = await bcrypt.hash('Switch57220', 10);
+      admin = await prisma.user.update({
+        where: { username: 'Switch' },
+        data: { password: hashedPassword, name: 'Switch' },
+      });
+      console.log('✅ Compte admin mis à jour');
+    } else {
+      // Créer le compte admin
+      const hashedPassword = await bcrypt.hash('Switch57220', 10);
+      admin = await prisma.user.create({
+        data: {
+          username: 'Switch',
+          password: hashedPassword,
+          name: 'Switch',
+        },
+      });
+      console.log('✅ Compte admin créé avec succès !');
+    }
+
+    console.log(`   Identifiant: ${admin.username}`);
+    console.log(`   Nom: ${admin.name}`);
+    console.log(`   Mot de passe: Switch57220`);
+  } catch (error: any) {
+    console.error('❌ Erreur lors de l\'initialisation de l\'admin:', error.message || error);
+    if (error.message?.includes('P1001') || error.message?.includes('Can\'t reach database')) {
+      console.error('⚠️ Impossible de se connecter à la base de données. Vérifiez DATABASE_URL.');
+    }
+    // Ne pas bloquer le serveur si l'init admin échoue
+  }
+})();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
