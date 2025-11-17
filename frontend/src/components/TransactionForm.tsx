@@ -15,6 +15,7 @@ const TransactionForm = memo(({
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,17 +25,19 @@ const TransactionForm = memo(({
     setLoading(true);
 
     try {
+      const finalCategory = category === 'autre' ? customCategory : category;
       await transactionService.createTransaction({
         type,
         amount: parseFloat(amount),
         description,
-        category: category || undefined,
+        category: finalCategory || undefined,
       });
       onTransactionCreated();
       // Reset form
       setAmount('');
       setDescription('');
       setCategory('');
+      setCustomCategory('');
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
@@ -103,13 +106,31 @@ const TransactionForm = memo(({
 
         <div className="form-group">
           <label htmlFor="category">Catégorie (optionnel)</label>
-          <input
-            type="text"
+          <select
             id="category"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ex: Nourriture, Transport, Salaire..."
-          />
+            onChange={(e) => {
+              setCategory(e.target.value);
+              if (e.target.value !== 'autre') {
+                setCustomCategory('');
+              }
+            }}
+          >
+            <option value="">Sélectionner une catégorie</option>
+            <option value="argent propre">💰 Argent propre</option>
+            <option value="argent sale">💵 Argent sale</option>
+            <option value="autre">Autre (saisie libre)</option>
+          </select>
+          {category === 'autre' && (
+            <input
+              type="text"
+              id="category-custom"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Saisir une catégorie personnalisée"
+              style={{ marginTop: '8px', width: '100%' }}
+            />
+          )}
         </div>
 
         <div className="form-actions">

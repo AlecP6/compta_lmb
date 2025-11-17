@@ -16,6 +16,7 @@ model User {
   password  String
   name      String
   email     String?  // Optionnel pour compatibilité
+  gameId    String?  @unique // ID de jeu GTA RP
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,6 +31,7 @@ model Transaction {
   amount      Float
   description String
   category    String?
+  source      String?  // "MANUAL" ou "GTA_RP" pour indiquer l'origine
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   

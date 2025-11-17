@@ -21,6 +21,7 @@ router.post(
       .isLength({ min: 6 })
       .withMessage('Le mot de passe doit contenir au moins 6 caractères'),
     body('name').trim().notEmpty().withMessage('Le nom est requis'),
+    body('gameId').optional().trim(),
   ],
   async (req: Request, res: Response) => {
     try {
@@ -29,7 +30,7 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { username, password, name } = req.body;
+      const { username, password, name, gameId } = req.body;
 
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await prisma.user.findUnique({
@@ -38,6 +39,17 @@ router.post(
 
       if (existingUser) {
         return res.status(400).json({ error: 'Cet identifiant est déjà utilisé' });
+      }
+
+      // Vérifier si le gameId est déjà utilisé (si fourni)
+      if (gameId) {
+        const existingGameId = await prisma.user.findUnique({
+          where: { gameId },
+        });
+
+        if (existingGameId) {
+          return res.status(400).json({ error: 'Cet ID de jeu est déjà associé à un compte' });
+        }
       }
 
       // Hasher le mot de passe
@@ -49,6 +61,7 @@ router.post(
           username,
           password: hashedPassword,
           name,
+          gameId: gameId || null,
         },
       });
 
@@ -68,6 +81,7 @@ router.post(
           id: user.id,
           username: user.username,
           name: user.name,
+          gameId: user.gameId,
         },
       });
     } catch (error) {
@@ -125,6 +139,7 @@ router.post(
           id: user.id,
           username: user.username,
           name: user.name,
+          gameId: user.gameId,
         },
       });
     } catch (error) {
@@ -156,6 +171,7 @@ router.get('/me', async (req, res) => {
         id: true,
         username: true,
         name: true,
+        gameId: true,
         createdAt: true,
       },
     });

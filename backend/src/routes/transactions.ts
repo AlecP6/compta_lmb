@@ -99,6 +99,7 @@ router.post(
           amount: parseFloat(amount),
           description,
           category: category || null,
+          source: 'MANUAL',
           userId: req.userId,
         },
         include: {

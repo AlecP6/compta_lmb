@@ -7,6 +7,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [gameId, setGameId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -18,7 +19,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(username, password, name);
+      await register(username, password, name, gameId || undefined);
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Erreur inscription:', err);
@@ -94,6 +95,20 @@ const Register = () => {
               minLength={6}
               placeholder="Au moins 6 caractères"
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gameId">ID de jeu GTA RP (optionnel)</label>
+            <input
+              type="text"
+              id="gameId"
+              value={gameId}
+              onChange={(e) => setGameId(e.target.value)}
+              placeholder="Votre ID de jeu pour l'automatisation"
+            />
+            <small className="form-hint">
+              Cet ID permettra d'automatiser les transactions depuis les logs du jeu
+            </small>
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary">

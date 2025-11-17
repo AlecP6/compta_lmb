@@ -5,6 +5,7 @@ interface User {
   id: string;
   username: string;
   name: string;
+  gameId?: string | null;
   isAdmin?: boolean;
 }
 
@@ -13,7 +14,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, name: string) => Promise<void>;
+  register: (username: string, password: string, name: string, gameId?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -71,8 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('token', response.token);
   }, []);
 
-  const register = useCallback(async (username: string, password: string, name: string) => {
-    const response = await authService.register(username, password, name);
+  const register = useCallback(async (username: string, password: string, name: string, gameId?: string) => {
+    const response = await authService.register(username, password, name, gameId);
     setToken(response.token);
     setUser(response.user);
     localStorage.setItem('token', response.token);

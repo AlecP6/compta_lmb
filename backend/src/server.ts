@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import transactionRoutes from './routes/transactions.js';
+import gtarpRoutes from './routes/gtarp.js';
+import discordRoutes from './routes/discord.js';
 import { initAdmin } from './scripts/initAdmin.js';
 
 dotenv.config();
@@ -33,6 +35,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/gtarp', gtarpRoutes);
+app.use('/api/discord', discordRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {

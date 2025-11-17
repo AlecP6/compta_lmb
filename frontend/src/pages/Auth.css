@@ -138,6 +138,15 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 .btn-primary {
   width: 100%;
   padding: 14px 24px;
