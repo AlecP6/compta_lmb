@@ -61,9 +61,18 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Vérifier si l'utilisateur existe
-    const existingUser = await prisma.user.findUnique({
-      where: { username },
-    });
+    let existingUser;
+    try {
+      existingUser = await prisma.user.findUnique({
+        where: { username },
+      });
+    } catch (dbError: any) {
+      console.error('❌ Erreur base de données lors de la vérification utilisateur:', dbError.message);
+      return res.status(500).json({ 
+        error: 'Erreur base de données', 
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined 
+      });
+    }
 
     if (existingUser) {
       return res.status(400).json({ error: 'Cet identifiant est déjà utilisé' });
@@ -73,9 +82,18 @@ app.post('/api/auth/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Créer l'utilisateur
-    const user = await prisma.user.create({
-      data: { username, password: hashedPassword, name },
-    });
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: { username, password: hashedPassword, name },
+      });
+    } catch (dbError: any) {
+      console.error('❌ Erreur base de données lors de la création utilisateur:', dbError.message);
+      return res.status(500).json({ 
+        error: 'Erreur base de données', 
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined 
+      });
+    }
 
     // Générer un token
     const jwtSecret = process.env.JWT_SECRET || 'secret-par-defaut';
@@ -91,8 +109,12 @@ app.post('/api/auth/register', async (req, res) => {
       },
     });
   } catch (error: any) {
-    console.error('Erreur inscription:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur inscription:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 });
 
