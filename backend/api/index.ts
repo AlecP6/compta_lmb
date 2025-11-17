@@ -383,28 +383,69 @@ app.post('/api/transactions', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Le montant doit être un nombre positif' });
     }
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        type,
-        amount: parseFloat(amount),
-        description,
-        category: category || null,
-        source: 'MANUAL',
-        userId,
-      },
-      include: {
-        user: {
-          select: { id: true, name: true },
-        },
-      },
+    // Vérifier que l'utilisateur existe
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
     });
+
+    if (!user) {
+      console.error('❌ Utilisateur non trouvé:', userId);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    console.log('✅ Utilisateur trouvé:', user.username);
+
+    let transaction;
+    try {
+      transaction = await prisma.transaction.create({
+        data: {
+          type,
+          amount: parseFloat(amount),
+          description,
+          category: category || null,
+          source: 'MANUAL',
+          userId,
+        },
+        include: {
+          user: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+    } catch (dbError: any) {
+      console.error('❌ Erreur base de données lors de la création:', dbError.message);
+      console.error('Code erreur Prisma:', dbError.code);
+      console.error('Stack:', dbError.stack);
+      
+      // Messages d'erreur plus explicites
+      if (dbError.code === 'P2003') {
+        return res.status(500).json({ 
+          error: 'Erreur de référence: utilisateur invalide',
+          details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        });
+      }
+      if (dbError.code === 'P2022') {
+        return res.status(500).json({ 
+          error: 'Erreur de schéma: colonne manquante dans la base de données',
+          details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        });
+      }
+      
+      return res.status(500).json({ 
+        error: 'Erreur lors de la création de la transaction',
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
+    }
 
     console.log('✅ Transaction créée:', transaction.id);
     res.status(201).json({ transaction });
   } catch (error: any) {
     console.error('❌ Erreur création transaction:', error);
     console.error('Stack:', error.stack);
-    res.status(500).json({ error: 'Erreur serveur', details: error.message });
+    res.status(500).json({ 
+      error: 'Erreur serveur', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 });
 
