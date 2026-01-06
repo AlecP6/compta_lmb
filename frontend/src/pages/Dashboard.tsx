@@ -109,7 +109,7 @@ const Dashboard = () => {
     <div className="dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Comptabilité London Mandem Boys</h1>
+          <h1>Comptabilité BlackDawg MC</h1>
           <p className="welcome-text">{user?.name}</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

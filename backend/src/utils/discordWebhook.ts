@@ -90,7 +90,7 @@ export function createTransactionDiscordEmbed(
       },
     ],
     footer: {
-      text: category ? `Catégorie: ${category}` : 'Comptabilité LMB',
+      text: category ? `Catégorie: ${category}` : 'Comptabilité BlackDawg MC',
     },
     timestamp: new Date().toISOString(),
   };
@@ -122,7 +122,7 @@ export async function notifyDiscordTransaction(
   );
 
   const payload: DiscordWebhookPayload = {
-    username: 'Comptabilité LMB',
+    username: 'Comptabilité BlackDawg MC',
     embeds: [embed],
   };
 
