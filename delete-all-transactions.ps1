@@ -1,0 +1,59 @@
+# Script pour supprimer TOUTES les transactions via l'API
+# ATTENTION: Cette action est irréversible !
+
+Write-Host "`n========================================" -ForegroundColor Yellow
+Write-Host "  SUPPRESSION DE TOUTES LES TRANSACTIONS" -ForegroundColor Red
+Write-Host "========================================`n" -ForegroundColor Yellow
+
+$apiUrl = "http://localhost:3000/api/admin/transactions/all"
+
+# Demander les identifiants admin
+$username = Read-Host "Nom d'utilisateur admin"
+$password = Read-Host "Mot de passe" -AsSecureString
+$passwordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
+
+Write-Host "`n🔐 Connexion en cours..." -ForegroundColor Cyan
+
+# Se connecter pour obtenir le token
+try {
+    $loginResponse = Invoke-RestMethod -Uri "http://localhost:3000/api/auth/login" -Method Post -ContentType "application/json" -Body (@{
+        username = $username
+        password = $passwordPlain
+    } | ConvertTo-Json)
+    
+    $token = $loginResponse.token
+    Write-Host "✅ Connecté avec succès`n" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Erreur de connexion: $_" -ForegroundColor Red
+    exit 1
+}
+
+# Confirmer la suppression
+Write-Host "⚠️  ATTENTION: Cette action va supprimer TOUTES les transactions de la base de données!" -ForegroundColor Red
+Write-Host "⚠️  Cette action est IRRÉVERSIBLE!`n" -ForegroundColor Red
+$confirmation = Read-Host "Tapez 'SUPPRIMER' pour confirmer"
+
+if ($confirmation -ne "SUPPRIMER") {
+    Write-Host "`n❌ Opération annulée.`n" -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "`n🗑️  Suppression en cours...`n" -ForegroundColor Cyan
+
+# Supprimer toutes les transactions
+try {
+    $headers = @{
+        "Authorization" = "Bearer $token"
+    }
+    
+    $deleteResponse = Invoke-RestMethod -Uri $apiUrl -Method Delete -Headers $headers
+    
+    Write-Host "✅ $($deleteResponse.message)" -ForegroundColor Green
+    Write-Host "📊 Transactions supprimées: $($deleteResponse.deletedCount)`n" -ForegroundColor Cyan
+} catch {
+    Write-Host "❌ Erreur lors de la suppression: $_" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "========================================`n" -ForegroundColor Yellow
+

@@ -584,6 +584,34 @@ app.get('/api/admin/deletion-logs', authenticate, requireAdmin, async (req, res)
   }
 });
 
+// Supprimer toutes les transactions (admin uniquement) - ATTENTION: Action irréversible !
+app.delete('/api/admin/transactions/all', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const count = await prisma.transaction.count();
+    
+    if (count === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'Aucune transaction à supprimer',
+        deletedCount: 0 
+      });
+    }
+
+    const result = await prisma.transaction.deleteMany({});
+    
+    console.log(`⚠️  Admin ${req.user?.username} a supprimé TOUTES les transactions (${result.count} transactions)`);
+
+    res.json({ 
+      success: true, 
+      message: `${result.count} transaction(s) supprimée(s) avec succès`,
+      deletedCount: result.count 
+    });
+  } catch (error: any) {
+    console.error('Erreur lors de la suppression:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Statistiques par semaine et par utilisateur (admin uniquement)
 app.get('/api/admin/weekly-stats', authenticate, requireAdmin, async (req, res) => {
   try {
