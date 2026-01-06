@@ -302,6 +302,74 @@ app.get('/api/me', authenticate, async (req, res) => {
   }
 });
 
+// Mettre à jour le profil utilisateur
+app.put('/api/auth/profile', authenticate, async (req, res) => {
+  try {
+    const userId = (req as any).userId;
+    const { username, name, password, currentPassword } = req.body;
+
+    // Récupérer l'utilisateur actuel
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    // Si on veut changer le username, vérifier qu'il n'existe pas déjà
+    if (username && username !== user.username) {
+      const existingUser = await prisma.user.findUnique({
+        where: { username }
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Ce nom d\'utilisateur est déjà pris' });
+      }
+    }
+
+    // Préparer les données à mettre à jour
+    const updateData: any = {};
+    if (username) updateData.username = username;
+    if (name) updateData.name = name;
+
+    // Si on veut changer le mot de passe, vérifier l'ancien
+    if (password) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Mot de passe actuel requis' });
+      }
+      
+      const validPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!validPassword) {
+        return res.status(400).json({ error: 'Mot de passe actuel incorrect' });
+      }
+
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    // Mettre à jour l'utilisateur
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData
+    });
+
+    console.log(`✅ Utilisateur ${user.username} a mis à jour son profil`);
+
+    res.json({
+      success: true,
+      message: 'Profil mis à jour avec succès',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        isAdmin: (updatedUser as any).isAdmin
+      }
+    });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Middleware admin
 const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
