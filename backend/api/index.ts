@@ -540,31 +540,7 @@ app.get('/api/transactions/stats/summary', authenticate, async (req, res) => {
   try {
     const allTransactions = await prisma.transaction.findMany();
 
-    // Calculer le solde pour "argent propre"
-    const argentPropreTransactions = allTransactions.filter(
-      t => t.category === 'argent propre'
-    );
-    const argentPropreIncome = argentPropreTransactions
-      .filter(t => t.type === 'INCOME')
-      .reduce((acc, t) => acc + t.amount, 0);
-    const argentPropreExpenses = argentPropreTransactions
-      .filter(t => t.type === 'EXPENSE')
-      .reduce((acc, t) => acc + t.amount, 0);
-    const argentPropreBalance = argentPropreIncome - argentPropreExpenses;
-
-    // Calculer le solde pour "argent sale"
-    const argentSaleTransactions = allTransactions.filter(
-      t => t.category === 'argent sale'
-    );
-    const argentSaleIncome = argentSaleTransactions
-      .filter(t => t.type === 'INCOME')
-      .reduce((acc, t) => acc + t.amount, 0);
-    const argentSaleExpenses = argentSaleTransactions
-      .filter(t => t.type === 'EXPENSE')
-      .reduce((acc, t) => acc + t.amount, 0);
-    const argentSaleBalance = argentSaleIncome - argentSaleExpenses;
-
-    // Totaux généraux (pour compatibilité)
+    // Calculer les totaux globaux
     const income = allTransactions
       .filter(t => t.type === 'INCOME')
       .reduce((acc, t) => acc + t.amount, 0);
@@ -579,8 +555,6 @@ app.get('/api/transactions/stats/summary', authenticate, async (req, res) => {
       expenses,
       balance,
       totalTransactions,
-      argentPropreBalance,
-      argentSaleBalance,
     });
   } catch (error: any) {
     console.error('Erreur:', error);

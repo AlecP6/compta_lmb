@@ -26,8 +26,6 @@ interface Stats {
   expenses: number;
   balance: number;
   totalTransactions: number;
-  argentPropreBalance: number;
-  argentSaleBalance: number;
 }
 
 const Dashboard = () => {
@@ -96,13 +94,19 @@ const Dashboard = () => {
     }).format(amount);
   }, []);
 
-  const formattedArgentPropre = useMemo(() => 
-    stats ? formatCurrency(stats.argentPropreBalance) : '0,00 €', 
-    [stats?.argentPropreBalance, formatCurrency]
+  const formattedBalance = useMemo(() => 
+    stats ? formatCurrency(stats.balance) : '0,00 €', 
+    [stats?.balance, formatCurrency]
   );
-  const formattedArgentSale = useMemo(() => 
-    stats ? formatCurrency(stats.argentSaleBalance) : '0,00 €', 
-    [stats?.argentSaleBalance, formatCurrency]
+  
+  const formattedIncome = useMemo(() => 
+    stats ? formatCurrency(stats.income) : '0,00 €', 
+    [stats?.income, formatCurrency]
+  );
+  
+  const formattedExpenses = useMemo(() => 
+    stats ? formatCurrency(stats.expenses) : '0,00 €', 
+    [stats?.expenses, formatCurrency]
   );
 
   return (
@@ -129,16 +133,22 @@ const Dashboard = () => {
           {stats && (
             <>
               <StatsCard
-                title="💰 Argent Propre"
-                value={formattedArgentPropre}
-                type="argent_propre"
-                positive={stats.argentPropreBalance >= 0}
+                title="💰 Solde Global"
+                value={formattedBalance}
+                type="balance"
+                positive={stats.balance >= 0}
               />
               <StatsCard
-                title="💵 Argent Sale"
-                value={formattedArgentSale}
-                type="argent_sale"
-                positive={stats.argentSaleBalance >= 0}
+                title="📈 Entrées Totales"
+                value={formattedIncome}
+                type="income"
+                positive={true}
+              />
+              <StatsCard
+                title="📉 Sorties Totales"
+                value={formattedExpenses}
+                type="expense"
+                positive={false}
               />
             </>
           )}

@@ -90,7 +90,7 @@ export function createTransactionDiscordEmbed(
       },
     ],
     footer: {
-      text: category ? `Catégorie: ${category}` : 'Comptabilité BlackDawg MC',
+      text: 'Comptabilité BlackDawg MC',
     },
     timestamp: new Date().toISOString(),
   };

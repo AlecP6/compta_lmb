@@ -55,7 +55,7 @@ router.post(
           type: transactionType,
           amount: parseFloat(amount),
           description: transactionDescription,
-          category: category || 'argent sale',
+          category: category || null,
           source: 'GTA_RP',
           userId: user.id,
         },
@@ -82,7 +82,7 @@ router.post(
           user.name,
           gameId,
           transactionDescription,
-          category || 'argent sale'
+          category
         ).catch((error) => {
           console.error('Erreur lors de l\'envoi de la notification Discord:', error);
           // On ne bloque pas la réponse même si Discord échoue
