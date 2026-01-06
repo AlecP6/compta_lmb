@@ -5,27 +5,29 @@
 }
 
 :root {
-  --primary: #ffffff;
-  --primary-dark: #e5e5e5;
-  --primary-light: #ffffff;
-  --secondary: #000000;
-  --accent: #ffffff;
-  --success: #ffffff;
-  --danger: #ffffff;
-  --warning: #ffffff;
-  --info: #ffffff;
+  --primary: #ff8c00;
+  --primary-dark: #cc7000;
+  --primary-light: #ffa500;
+  --secondary: #1a1a1a;
+  --accent: #ff8c00;
+  --gold: #ffd700;
+  --success: #4caf50;
+  --danger: #f44336;
+  --warning: #ff8c00;
+  --info: #2196f3;
   --bg-primary: #0a0a0a;
   --bg-secondary: #1a1a1a;
-  --bg-overlay: rgba(0, 0, 0, 0.85);
+  --bg-overlay: rgba(0, 0, 0, 0.9);
   --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-muted: #888888;
-  --border: #333333;
-  --border-light: #444444;
+  --text-secondary: #e0e0e0;
+  --text-muted: #999999;
+  --border: #ff8c00;
+  --border-light: #ff8c0055;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
   --shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.7), 0 4px 8px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.8), 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-orange: 0 0 20px rgba(255, 140, 0, 0.3);
   --radius: 8px;
   --radius-sm: 6px;
   --radius-lg: 12px;
@@ -39,8 +41,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: #000000;
   background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
-    url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&q=80&auto=format&fit=crop');
+    linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(10, 10, 10, 0.9)),
+    linear-gradient(to bottom, rgba(255, 140, 0, 0.05) 0%, transparent 50%, rgba(255, 140, 0, 0.05) 100%),
+    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -63,13 +66,27 @@ body::before {
       0deg,
       transparent,
       transparent 2px,
-      rgba(255, 255, 255, 0.03) 2px,
-      rgba(255, 255, 255, 0.03) 4px
+      rgba(255, 140, 0, 0.02) 2px,
+      rgba(255, 140, 0, 0.02) 4px
     );
   pointer-events: none;
   z-index: 0;
   will-change: transform;
   transform: translateZ(0);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 140, 0, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(255, 140, 0, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
 }
 
 code {

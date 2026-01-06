@@ -5,16 +5,16 @@
 }
 
 .transaction-item {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  border-left: 4px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--border-light);
   border-radius: var(--radius);
   padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-light);
   position: relative;
   overflow: hidden;
   will-change: transform;
@@ -33,12 +33,13 @@
 }
 
 .transaction-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 140, 0, 0.05);
   transform: translate3d(4px, 0, 0);
   box-shadow: 
-    0 0 0 1px rgba(255, 255, 255, 0.2),
-    var(--shadow-md);
-  border-color: rgba(255, 255, 255, 0.3);
+    0 0 0 1px var(--border),
+    var(--shadow-md),
+    0 0 20px rgba(255, 140, 0, 0.2);
+  border-color: var(--border);
 }
 
 .transaction-item:hover::before {
@@ -46,20 +47,21 @@
 }
 
 .transaction-item.transaction-income {
-  border-left-color: #ffffff;
+  border-left-color: #4caf50;
 }
 
 .transaction-item.transaction-income::before {
-  background: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  background: #4caf50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
 }
 
 .transaction-item.transaction-expense {
-  border-left-color: rgba(255, 255, 255, 0.5);
+  border-left-color: #f44336;
 }
 
 .transaction-item.transaction-expense::before {
-  background: rgba(255, 255, 255, 0.5);
+  background: #f44336;
+  box-shadow: 0 0 15px rgba(244, 67, 54, 0.6);
 }
 
 .transaction-main {
@@ -78,10 +80,10 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 140, 0, 0.1);
   flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  filter: grayscale(100%) brightness(1.2);
+  border: 2px solid var(--border-light);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
 }
 
 .transaction-details {

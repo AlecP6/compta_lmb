@@ -15,20 +15,21 @@
 }
 
 .transaction-form {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px);
+  border: 2px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 32px;
   box-shadow: 
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    var(--shadow-lg);
+    0 0 0 2px var(--border-light),
+    var(--shadow-lg),
+    0 0 40px rgba(255, 140, 0, 0.2);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
 
 .transaction-form h3 {
-  color: #ffffff;
+  color: #ff8c00;
   margin-bottom: 24px;
   font-size: 22px;
   font-weight: 900;
@@ -37,7 +38,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgba(255, 140, 0, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .transaction-form h3::before {
@@ -84,10 +85,10 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2), 0 0 20px rgba(255, 140, 0, 0.3);
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 140, 0, 0.05);
 }
 
 .type-buttons {
@@ -121,15 +122,15 @@
 }
 
 .type-buttons button.active.income {
-  background: #ffffff;
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
   color: #000000;
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5), 0 0 25px rgba(76, 175, 80, 0.3);
 }
 
 .type-buttons button.active.expense {
-  background: rgba(255, 255, 255, 0.7);
-  color: #000000;
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.5), 0 0 25px rgba(244, 67, 54, 0.3);
 }
 
 .form-actions {
@@ -163,9 +164,9 @@
 
 .btn-submit {
   padding: 12px 24px;
-  background: #ffffff;
+  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
   color: #000000;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 700;
@@ -173,13 +174,13 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4), 0 0 20px rgba(255, 140, 0, 0.2);
 }
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
-  background: #f0f0f0;
+  box-shadow: 0 6px 25px rgba(255, 140, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.3);
+  background: linear-gradient(135deg, #ffa500 0%, #ffd700 100%);
 }
 
 .btn-submit:active:not(:disabled) {

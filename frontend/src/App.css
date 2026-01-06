@@ -5,8 +5,9 @@
   min-height: 100vh;
   background: #000000;
   background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
-    url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&q=80&auto=format&fit=crop');
+    linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(10, 10, 10, 0.9)),
+    linear-gradient(to bottom, rgba(255, 140, 0, 0.05) 0%, transparent 50%, rgba(255, 140, 0, 0.05) 100%),
+    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -14,13 +15,13 @@
 }
 
 .spinner {
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  border-top: 4px solid #ffffff;
+  border: 4px solid rgba(255, 140, 0, 0.2);
+  border-top: 4px solid #ff8c00;
   border-radius: 50%;
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.5), 0 0 60px rgba(255, 140, 0, 0.3);
 }
 
 @keyframes spin {
