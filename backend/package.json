@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "node dist/api/index.js",
     "build": "prisma generate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "setup:admin": "node scripts/initAdmin.js"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

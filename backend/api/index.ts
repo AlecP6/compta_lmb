@@ -599,7 +599,7 @@ app.delete('/api/admin/transactions/all', authenticate, requireAdmin, async (req
 
     const result = await prisma.transaction.deleteMany({});
     
-    console.log(`⚠️  Admin ${req.user?.username} a supprimé TOUTES les transactions (${result.count} transactions)`);
+    console.log(`⚠️  Admin ${(req as any).user?.username} a supprimé TOUTES les transactions (${result.count} transactions)`);
 
     res.json({ 
       success: true, 
