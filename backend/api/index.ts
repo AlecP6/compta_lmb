@@ -612,6 +612,107 @@ app.delete('/api/admin/transactions/all', authenticate, requireAdmin, async (req
   }
 });
 
+// Lister tous les utilisateurs (admin uniquement)
+app.get('/api/admin/users', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        isAdmin: true,
+        createdAt: true,
+        _count: {
+          select: {
+            transactions: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({ users });
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Supprimer un utilisateur (admin uniquement)
+app.delete('/api/admin/users/:id', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = (req as any).user?.userId;
+
+    // Empêcher la suppression de son propre compte
+    if (id === currentUserId) {
+      return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte' });
+    }
+
+    // Vérifier si l'utilisateur existe
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    // Supprimer l'utilisateur (les transactions seront supprimées en cascade)
+    await prisma.user.delete({ where: { id } });
+
+    console.log(`⚠️  Admin ${(req as any).user?.username} a supprimé l'utilisateur ${user.username}`);
+
+    res.json({ 
+      success: true, 
+      message: `Utilisateur ${user.username} supprimé avec succès` 
+    });
+  } catch (error: any) {
+    console.error('Erreur lors de la suppression:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Réinitialiser tous les utilisateurs sauf admin (admin uniquement) - ATTENTION: Action irréversible !
+app.delete('/api/admin/users/reset/all', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const currentUserId = (req as any).user?.userId;
+
+    // Compter les utilisateurs à supprimer
+    const count = await prisma.user.count({
+      where: {
+        id: { not: currentUserId },
+        isAdmin: false
+      }
+    });
+
+    if (count === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'Aucun utilisateur à supprimer',
+        deletedCount: 0 
+      });
+    }
+
+    // Supprimer tous les utilisateurs sauf l'admin actuel
+    const result = await prisma.user.deleteMany({
+      where: {
+        id: { not: currentUserId },
+        isAdmin: false
+      }
+    });
+
+    console.log(`⚠️  Admin ${(req as any).user?.username} a supprimé TOUS les utilisateurs non-admin (${result.count} utilisateurs)`);
+
+    res.json({ 
+      success: true, 
+      message: `${result.count} utilisateur(s) supprimé(s) avec succès`,
+      deletedCount: result.count 
+    });
+  } catch (error: any) {
+    console.error('Erreur lors de la suppression:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Statistiques par semaine et par utilisateur (admin uniquement)
 app.get('/api/admin/weekly-stats', authenticate, requireAdmin, async (req, res) => {
   try {
