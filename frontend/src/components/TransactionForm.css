@@ -23,13 +23,13 @@
   box-shadow: 
     0 0 0 2px var(--border-light),
     var(--shadow-lg),
-    0 0 40px rgba(255, 140, 0, 0.2);
+    0 0 40px rgba(220, 20, 60, 0.2);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
 
 .transaction-form h3 {
-  color: #ff8c00;
+  color: #dc143c;
   margin-bottom: 24px;
   font-size: 22px;
   font-weight: 900;
@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  text-shadow: 0 0 20px rgba(255, 140, 0, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 20px rgba(220, 20, 60, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .transaction-form h3::before {
@@ -86,9 +86,9 @@
 .form-group input:focus {
   outline: none;
   border-color: var(--border);
-  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2), 0 0 20px rgba(255, 140, 0, 0.3);
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.2), 0 0 20px rgba(220, 20, 60, 0.3);
   transform: translateY(-1px);
-  background: rgba(255, 140, 0, 0.05);
+  background: rgba(220, 20, 60, 0.05);
 }
 
 .type-buttons {
@@ -164,8 +164,8 @@
 
 .btn-submit {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
-  color: #000000;
+  background: linear-gradient(135deg, #dc143c 0%, #ff4444 100%);
+  color: #ffffff;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -174,13 +174,13 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4), 0 0 20px rgba(255, 140, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4), 0 0 20px rgba(220, 20, 60, 0.2);
 }
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 140, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.3);
-  background: linear-gradient(135deg, #ffa500 0%, #ffd700 100%);
+  box-shadow: 0 6px 25px rgba(220, 20, 60, 0.6), 0 0 40px rgba(220, 20, 60, 0.3);
+  background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
 }
 
 .btn-submit:active:not(:disabled) {

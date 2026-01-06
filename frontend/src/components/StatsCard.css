@@ -9,7 +9,7 @@
   box-shadow: 
     0 0 0 2px var(--border-light),
     var(--shadow-lg),
-    0 0 30px rgba(255, 140, 0, 0.15);
+    0 0 30px rgba(220, 20, 60, 0.15);
   border: 2px solid var(--border);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
@@ -25,11 +25,11 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #ff8c00, #ffd700, #ff8c00);
+  background: linear-gradient(90deg, #dc143c, #ff4444, #dc143c);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
-  box-shadow: 0 0 15px rgba(255, 140, 0, 0.7);
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.7);
 }
 
 .stats-card:hover {
@@ -37,7 +37,7 @@
   box-shadow: 
     0 0 0 2px var(--border),
     var(--shadow-lg),
-    0 0 50px rgba(255, 140, 0, 0.3);
+    0 0 50px rgba(220, 20, 60, 0.3);
 }
 
 .stats-card:hover::before {
@@ -52,10 +52,10 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius);
-  background: rgba(255, 140, 0, 0.1);
+  background: rgba(220, 20, 60, 0.1);
   border: 2px solid var(--border-light);
   flex-shrink: 0;
-  box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);
+  box-shadow: 0 0 20px rgba(220, 20, 60, 0.2);
 }
 
 .stats-card-content {
@@ -73,20 +73,20 @@
 }
 
 .stats-card-value {
-  color: #ffd700;
+  color: #ff4444;
   font-size: 32px;
   font-weight: 900;
   line-height: 1.2;
   word-break: break-word;
   text-shadow: 
-    0 0 30px rgba(255, 140, 0, 0.6),
-    0 0 60px rgba(255, 140, 0, 0.3),
+    0 0 30px rgba(220, 20, 60, 0.6),
+    0 0 60px rgba(220, 20, 60, 0.3),
     2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .stats-card-balance .stats-card-value {
   font-size: 36px;
-  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  background: linear-gradient(135deg, #ff4444 0%, #dc143c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

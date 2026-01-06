@@ -33,12 +33,12 @@
 }
 
 .transaction-item:hover {
-  background: rgba(255, 140, 0, 0.05);
+  background: rgba(220, 20, 60, 0.05);
   transform: translate3d(4px, 0, 0);
   box-shadow: 
     0 0 0 1px var(--border),
     var(--shadow-md),
-    0 0 20px rgba(255, 140, 0, 0.2);
+    0 0 20px rgba(220, 20, 60, 0.2);
   border-color: var(--border);
 }
 
@@ -80,10 +80,10 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(255, 140, 0, 0.1);
+  background: rgba(220, 20, 60, 0.1);
   flex-shrink: 0;
   border: 2px solid var(--border-light);
-  box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.15);
 }
 
 .transaction-details {

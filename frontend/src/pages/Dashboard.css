@@ -3,7 +3,7 @@
   background: #000000;
   background-image: 
     linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(10, 10, 10, 0.9)),
-    linear-gradient(to bottom, rgba(255, 140, 0, 0.05) 0%, transparent 50%, rgba(255, 140, 0, 0.05) 100%),
+    linear-gradient(to bottom, rgba(220, 20, 60, 0.05) 0%, transparent 50%, rgba(220, 20, 60, 0.05) 100%),
     url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
@@ -24,8 +24,8 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(255, 140, 0, 0.02) 2px,
-      rgba(255, 140, 0, 0.02) 4px
+      rgba(220, 20, 60, 0.02) 2px,
+      rgba(220, 20, 60, 0.02) 4px
     );
   pointer-events: none;
   z-index: 0;
@@ -34,7 +34,7 @@
 .dashboard-header {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.9));
   padding: 24px 48px;
-  box-shadow: var(--shadow-md), 0 4px 20px rgba(255, 140, 0, 0.15);
+  box-shadow: var(--shadow-md), 0 4px 20px rgba(220, 20, 60, 0.15);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -55,10 +55,10 @@
   text-transform: uppercase;
   letter-spacing: 3px;
   text-shadow: 
-    0 0 30px rgba(255, 140, 0, 0.6),
-    0 0 60px rgba(255, 140, 0, 0.3),
+    0 0 30px rgba(220, 20, 60, 0.6),
+    0 0 60px rgba(220, 20, 60, 0.3),
     2px 2px 4px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(135deg, #ffffff 0%, #ffd700 50%, #ff8c00 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ff4444 50%, #dc143c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -74,29 +74,29 @@
 
 .btn-admin {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
-  border: 2px solid #ff8c00;
+  background: linear-gradient(135deg, #dc143c 0%, #ff4444 100%);
+  border: 2px solid #dc143c;
   border-radius: 8px;
-  color: #000;
+  color: #fff;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 0 20px rgba(255, 140, 0, 0.4);
+  box-shadow: 0 0 20px rgba(220, 20, 60, 0.4);
 }
 
 .btn-admin:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 25px rgba(255, 140, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.3);
-  background: linear-gradient(135deg, #ffa500 0%, #ffd700 100%);
+  box-shadow: 0 4px 25px rgba(220, 20, 60, 0.6), 0 0 40px rgba(220, 20, 60, 0.3);
+  background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
 }
 
 .btn-logout {
   padding: 10px 20px;
   background: transparent;
-  color: #ff8c00;
+  color: #dc143c;
   border: 2px solid var(--border-light);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -111,9 +111,9 @@
 .btn-logout:hover {
   transform: translateY(-2px);
   border-color: var(--border);
-  background: rgba(255, 140, 0, 0.1);
-  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3), 0 0 20px rgba(255, 140, 0, 0.2);
-  color: #ffa500;
+  background: rgba(220, 20, 60, 0.1);
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3), 0 0 20px rgba(220, 20, 60, 0.2);
+  color: #ff4444;
 }
 
 .dashboard-content {
@@ -139,7 +139,7 @@
   box-shadow: 
     0 0 0 2px var(--border-light),
     var(--shadow-lg),
-    0 0 40px rgba(255, 140, 0, 0.15);
+    0 0 40px rgba(220, 20, 60, 0.15);
   border: 2px solid var(--border);
   animation: fadeIn 0.3s ease-out;
   will-change: transform, opacity;
@@ -169,12 +169,12 @@
 }
 
 .section-header h2 {
-  color: #ff8c00;
+  color: #dc143c;
   font-size: 26px;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(255, 140, 0, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 20px rgba(220, 20, 60, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .header-actions {
@@ -214,16 +214,16 @@
 }
 
 .filter-buttons button.active {
-  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
-  color: #000000;
-  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.5), 0 0 20px rgba(255, 140, 0, 0.3);
+  background: linear-gradient(135deg, #dc143c 0%, #ff4444 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.5), 0 0 20px rgba(220, 20, 60, 0.3);
   border: 1px solid var(--border);
 }
 
 .btn-add {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
-  color: #000000;
+  background: linear-gradient(135deg, #dc143c 0%, #ff4444 100%);
+  color: #ffffff;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -232,7 +232,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4), 0 0 20px rgba(255, 140, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4), 0 0 20px rgba(220, 20, 60, 0.2);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -246,8 +246,8 @@
 
 .btn-add:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 140, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.3);
-  background: linear-gradient(135deg, #ffa500 0%, #ffd700 100%);
+  box-shadow: 0 6px 25px rgba(220, 20, 60, 0.6), 0 0 40px rgba(220, 20, 60, 0.3);
+  background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
 }
 
 .btn-add:active {
