@@ -1,12 +1,55 @@
 import express, { Response } from 'express';
-import { body, validationResult, query } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Obtenir toutes les transactions (partagées entre tous les utilisateurs)
+// ⚠️ /stats/summary DOIT être déclaré avant /:id pour ne pas être capturé comme ID
+router.get('/stats/summary', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const allTransactions = await prisma.transaction.findMany();
+
+    const totalIncome = allTransactions
+      .filter((t) => t.type === 'INCOME')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpense = allTransactions
+      .filter((t) => t.type === 'EXPENSE')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const balance = totalIncome - totalExpense;
+
+    const categoryStats: Record<string, { income: number; expense: number }> = {};
+    allTransactions.forEach((t) => {
+      const cat = t.category || 'Sans catégorie';
+      if (!categoryStats[cat]) {
+        categoryStats[cat] = { income: 0, expense: 0 };
+      }
+      if (t.type === 'INCOME') {
+        categoryStats[cat].income += t.amount;
+      } else {
+        categoryStats[cat].expense += t.amount;
+      }
+    });
+
+    res.json({
+      totalIncome,
+      totalExpense,
+      balance,
+      income: totalIncome,
+      expenses: totalExpense,
+      totalTransactions: allTransactions.length,
+      categoryStats,
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des statistiques:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Obtenir toutes les transactions
 router.get('/', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { type, startDate, endDate, limit = '100' } = req.query;
@@ -44,7 +87,6 @@ router.get('/', authenticateToken, async (req: AuthRequest, res) => {
       take: parseInt(limit as string),
     });
 
-    // Calculer le solde total
     const allTransactions = await prisma.transaction.findMany();
     const balance = allTransactions.reduce((acc, transaction) => {
       return transaction.type === 'INCOME'
@@ -176,7 +218,6 @@ router.put(
       const { id } = req.params;
       const { type, amount, description, category } = req.body;
 
-      // Vérifier que la transaction existe
       const existingTransaction = await prisma.transaction.findUnique({
         where: { id },
       });
@@ -185,8 +226,6 @@ router.put(
         return res.status(404).json({ error: 'Transaction non trouvée' });
       }
 
-      // Vérifier que l'utilisateur est le propriétaire ou permettre la modification pour tous
-      // (dans ce cas, on permet à tous les utilisateurs authentifiés de modifier)
       const updateData: any = {};
       if (type) updateData.type = type;
       if (amount) updateData.amount = parseFloat(amount);
@@ -215,10 +254,14 @@ router.put(
   }
 );
 
-// Supprimer une transaction
+// Supprimer une transaction + enregistrer dans DeletionLog
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
+
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
 
     const transaction = await prisma.transaction.findUnique({
       where: { id },
@@ -227,6 +270,17 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
     if (!transaction) {
       return res.status(404).json({ error: 'Transaction non trouvée' });
     }
+
+    // Enregistrer la suppression dans les logs avant de supprimer
+    await prisma.deletionLog.create({
+      data: {
+        transactionId: transaction.id,
+        transactionType: transaction.type,
+        amount: transaction.amount,
+        description: transaction.description,
+        deletedBy: req.userId,
+      },
+    });
 
     await prisma.transaction.delete({
       where: { id },
@@ -239,47 +293,4 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
   }
 });
 
-// Obtenir les statistiques
-router.get('/stats/summary', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const allTransactions = await prisma.transaction.findMany();
-
-    const totalIncome = allTransactions
-      .filter((t) => t.type === 'INCOME')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const totalExpense = allTransactions
-      .filter((t) => t.type === 'EXPENSE')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const balance = totalIncome - totalExpense;
-
-    // Statistiques par catégorie
-    const categoryStats: Record<string, { income: number; expense: number }> = {};
-    allTransactions.forEach((t) => {
-      const cat = t.category || 'Sans catégorie';
-      if (!categoryStats[cat]) {
-        categoryStats[cat] = { income: 0, expense: 0 };
-      }
-      if (t.type === 'INCOME') {
-        categoryStats[cat].income += t.amount;
-      } else {
-        categoryStats[cat].expense += t.amount;
-      }
-    });
-
-    res.json({
-      totalIncome,
-      totalExpense,
-      balance,
-      totalTransactions: allTransactions.length,
-      categoryStats,
-    });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des statistiques:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
 export default router;
-

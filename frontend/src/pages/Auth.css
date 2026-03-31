@@ -10,7 +10,7 @@
   background-image: 
     linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(10, 10, 10, 0.9)),
     linear-gradient(to bottom, rgba(22, 163, 74, 0.05) 0%, transparent 50%, rgba(22, 163, 74, 0.05) 100%),
-    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80&auto=format&fit=crop');
+    url('https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?w=1920&q=80&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

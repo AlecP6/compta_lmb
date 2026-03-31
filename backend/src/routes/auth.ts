@@ -82,6 +82,7 @@ router.post(
           username: user.username,
           name: user.name,
           gameId: user.gameId,
+          isAdmin: user.isAdmin,
         },
       });
     } catch (error) {
@@ -140,6 +141,7 @@ router.post(
           username: user.username,
           name: user.name,
           gameId: user.gameId,
+          isAdmin: user.isAdmin,
         },
       });
     } catch (error) {
@@ -172,6 +174,7 @@ router.get('/me', async (req, res) => {
         username: true,
         name: true,
         gameId: true,
+        isAdmin: true,
         createdAt: true,
       },
     });
